@@ -59,12 +59,20 @@
 
         <!-- 2. Timer Display -->
         <div id="timer-display-container" class="p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-2xl mb-8 hidden">
-            <!-- Font size adjusted for responsiveness -->
-            <p id="timer-display" class="text-5xl sm:text-6xl md:text-8xl lg:text-8xl font-black text-center text-green-400 monospace-table">
-                01:30:00.0
-            </p>
+            <!-- Font size adjusted for responsiveness and overflow fix -->
+            <div class="w-full flex justify-center items-center overflow-x-auto">
+                <p id="timer-display" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-center text-green-400 monospace-table break-words max-w-full whitespace-nowrap">
+                    01:30:00.0
+                </p>
+            </div>
         </div>
-        
+
+        <!-- Start/Stop Button (hidden by default) -->
+        <button id="start-button"
+                class="w-full px-8 py-4 mb-4 bg-green-600 text-white font-extrabold text-xl rounded-xl shadow-xl hover:bg-green-700 transition transform hover:scale-[1.02] active:scale-95 hidden">
+            Start
+        </button>
+
         <!-- 3. Control Button -->
         <button id="submit-button" onclick="showNameModal()" disabled
                 class="w-full px-8 py-4 bg-blue-600 text-white font-extrabold text-xl rounded-xl shadow-xl hover:bg-blue-700 transition transform hover:scale-[1.02] active:scale-95 disabled:bg-gray-400 disabled:shadow-none mb-10">
@@ -115,7 +123,9 @@
         let targetEndTime = null;
         let isRunning = false;
         let timerInterval = null;
-        
+        let timerDurationMs = 0; // Store duration in ms for delayed start
+        let pausedTimeMs = 0; // Store remaining ms when paused
+
         // --- Element References ---
         const titleInput = document.getElementById('title-input');
         const mainTitle = document.getElementById('main-title');
@@ -126,6 +136,7 @@
         const timerDisplayContainer = document.getElementById('timer-display-container'); // New container reference
         const inputSection = document.getElementById('input-section'); // New section reference
         const setButton = document.getElementById('set-button');
+        const startButton = document.getElementById('start-button');
         const submitButton = document.getElementById('submit-button');
         const recordsBody = document.getElementById('records-body');
         const noRecordsMessage = document.getElementById('no-records-message');
@@ -179,7 +190,8 @@
         // --- Timer Logic ---
 
         /**
-         * Parses input time, sets the target end time, and starts the countdown.
+         * Parses input time, sets the target end time, but does NOT start the countdown.
+         * Shows the Start button.
          */
         function setTimer() {
             // Stop any existing timer to reset
@@ -209,23 +221,57 @@
                 inputSection.classList.add('hidden');
                 timerDisplayContainer.classList.remove('hidden');
 
-                // Calculate the exact time when the countdown should end
-                targetEndTime = Date.now() + (durationInSeconds * 1000);
-                isRunning = true;
-                
-                // Update button states
-                submitButton.disabled = false;
-                submitButton.classList.remove('disabled:bg-gray-400', 'disabled:shadow-none');
+                // Store the duration for later use
+                timerDurationMs = durationInSeconds * 1000;
+                pausedTimeMs = timerDurationMs;
+                isRunning = false;
 
-                // Initial color state (will be set properly by updateTimer)
+                // Show Start button, hide Submit button until started
+                startButton.classList.remove('hidden');
+                startButton.textContent = "Start";
+                startButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                startButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                submitButton.disabled = true;
+
+                // Reset timer display to full time
                 timerDisplay.classList.remove('text-red-500', 'text-gray-500');
-                
-                // Start the high-precision interval (100ms)
-                timerInterval = setInterval(updateTimer, 100);
-                updateTimer(); // Initial call to display time immediately
+                timerDisplay.classList.add('text-green-400');
+                timerDisplay.textContent = [
+                    String(hours).padStart(2, '0'),
+                    String(minutes).padStart(2, '0'),
+                    String(seconds).padStart(2, '0')
+                ].join(':') + `.0`;
 
             } catch (error) {
                 alertMessage("Invalid time input. Please use numbers only.");
+            }
+        }
+
+        /**
+         * Toggles the timer between running and stopped.
+         */
+        function toggleTimer() {
+            if (!isRunning) {
+                // Start or resume
+                if (pausedTimeMs <= 0) return;
+                targetEndTime = Date.now() + pausedTimeMs;
+                isRunning = true;
+                startButton.textContent = "Stop";
+                startButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                startButton.classList.add('bg-red-600', 'hover:bg-red-700');
+                submitButton.disabled = false;
+                submitButton.classList.remove('disabled:bg-gray-400', 'disabled:shadow-none');
+                timerInterval = setInterval(updateTimer, 100);
+                updateTimer();
+            } else {
+                // Stop (pause)
+                isRunning = false;
+                clearInterval(timerInterval);
+                pausedTimeMs = Math.max(0, targetEndTime - Date.now());
+                startButton.textContent = "Start";
+                startButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                startButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                submitButton.disabled = true;
             }
         }
 
@@ -289,6 +335,7 @@
             ].join(':') + `.${tenths}`;
 
             timerDisplay.textContent = timeStr;
+            pausedTimeMs = timeRemainingMs;
         }
 
         /**
@@ -366,6 +413,14 @@
             
             // Initially hide the timer display container until the timer is set
             timerDisplayContainer.classList.add('hidden');
+
+            // Live update main title as user types
+            titleInput.addEventListener('input', () => {
+                mainTitle.textContent = titleInput.value.trim() || "Countdown Timer";
+            });
+
+            // Start button event
+            startButton.addEventListener('click', toggleTimer);
         });
         
     </script>
