@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pre-pre-pre Mock Countdown Timer</title>
+    <title>Student Countdown Timer</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -23,40 +23,54 @@
 <body class="min-h-screen flex flex-col items-center p-4 bg-gray-50">
 
     <div class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-6 md:p-10">
-        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-6 border-b-2 pb-2">
-            Student Exam Countdown
+        
+        <!-- 0. Dynamic Title Display -->
+        <h1 id="main-title" class="text-4xl md:text-5xl font-extrabold text-center text-gray-800 mb-6">
+            Folding test
         </h1>
 
-        <!-- 1. Input Section -->
-        <div id="input-section" class="flex flex-col sm:flex-row items-center justify-center p-4 bg-blue-50 rounded-lg shadow-inner mb-8">
-            <label class="font-bold text-lg text-gray-700 mb-2 sm:mb-0 sm:mr-4">Set Time (HH:MM:SS):</label>
-            <div class="flex items-center space-x-2">
-                <input id="h-input" type="number" min="0" max="99" value="01" class="w-16 p-2 text-center text-xl font-bold rounded-lg border-2 border-blue-300 focus:border-blue-500 transition"/>
-                <span class="text-xl font-bold text-gray-700">:</span>
-                <input id="m-input" type="number" min="0" max="59" value="30" class="w-16 p-2 text-center text-xl font-bold rounded-lg border-2 border-blue-300 focus:border-blue-500 transition"/>
-                <span class="text-xl font-bold text-gray-700">:</span>
-                <input id="s-input" type="number" min="0" max="59" value="00" class="w-16 p-2 text-center text-xl font-bold rounded-lg border-2 border-blue-300 focus:border-blue-500 transition"/>
+        <!-- 1. Input Section - This entire section will hide after setting the timer -->
+        <div id="input-section">
+            <!-- Title Input -->
+            <div class="mb-6 p-4 bg-yellow-50 rounded-lg shadow-inner">
+                <label for="title-input" class="font-bold text-lg text-gray-700 block mb-2">Change Timer Title:</label>
+                <input id="title-input" type="text" value="Folding test"
+                       class="w-full p-2 text-xl rounded-lg border-2 border-yellow-300 focus:border-yellow-500 transition"
+                       placeholder="Enter new title"/>
+                <!-- UPDATED DEFAULT VALUE -->
             </div>
-            <button id="set-button" onclick="setTimer()" 
-                    class="mt-4 sm:mt-0 sm:ml-6 px-6 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700 transition transform hover:scale-105 active:scale-95">
-                Set Timer
-            </button>
+
+            <!-- Time Input -->
+            <div class="flex flex-col sm:flex-row items-center justify-center p-4 bg-blue-50 rounded-lg shadow-inner mb-8">
+                <label class="font-bold text-lg text-gray-700 mb-2 sm:mb-0 sm:mr-4">Set Time (HH:MM:SS):</label>
+                <div class="flex items-center space-x-2">
+                    <input id="h-input" type="number" min="0" max="99" value="01" class="w-16 p-2 text-center text-xl font-bold rounded-lg border-2 border-blue-300 focus:border-blue-500 transition"/>
+                    <span class="text-xl font-bold text-gray-700">:</span>
+                    <input id="m-input" type="number" min="0" max="59" value="30" class="w-16 p-2 text-center text-xl font-bold rounded-lg border-2 border-blue-300 focus:border-blue-500 transition"/>
+                    <span class="text-xl font-bold text-gray-700">:</span>
+                    <input id="s-input" type="number" min="0" max="59" value="00" class="w-16 p-2 text-center text-xl font-bold rounded-lg border-2 border-blue-300 focus:border-blue-500 transition"/>
+                </div>
+                <button id="set-button" onclick="setTimer()" 
+                        class="mt-4 sm:mt-0 sm:ml-6 px-6 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700 transition transform hover:scale-105 active:scale-95">
+                    Set Timer
+                </button>
+            </div>
         </div>
 
         <!-- 2. Timer Display -->
-        <div class="p-6 bg-gray-900 rounded-2xl shadow-2xl mb-8">
-            <!-- Adjusted classes for better responsiveness -->
-            <p id="timer-display" class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-center text-green-400 monospace-table">
+        <div id="timer-display-container" class="p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-2xl mb-8 hidden">
+            <!-- Font size adjusted for responsiveness -->
+            <p id="timer-display" class="text-5xl sm:text-6xl md:text-8xl lg:text-8xl font-black text-center text-green-400 monospace-table">
                 01:30:00.0
             </p>
         </div>
         
         <!-- 3. Control Button -->
-        <button id="submit-button" onclick="submitRecord()" disabled
+        <button id="submit-button" onclick="showNameModal()" disabled
                 class="w-full px-8 py-4 bg-blue-600 text-white font-extrabold text-xl rounded-xl shadow-xl hover:bg-blue-700 transition transform hover:scale-[1.02] active:scale-95 disabled:bg-gray-400 disabled:shadow-none mb-10">
             Submit (Record Time)
         </button>
-
+        
         <!-- 4. Records Display Table -->
         <h2 class="text-2xl font-bold text-gray-700 mb-4">Submission Log</h2>
         <div class="overflow-x-auto bg-gray-100 rounded-lg border border-gray-300 shadow-inner">
@@ -78,6 +92,23 @@
             <p id="no-records-message" class="text-center text-gray-500 py-4 italic">No submissions yet.</p>
         </div>
     </div>
+    
+    <!-- Custom Name Input Modal -->
+    <div id="name-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Record Submission</h3>
+            <label for="student-name-input" class="block text-gray-600 mb-2">Enter student's name:</label>
+            <input id="student-name-input" type="text" 
+                   class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 mb-4 transition" 
+                   placeholder="e.g. Chiang, Shum, Her"
+                   onkeydown="if(event.key === 'Enter') handleModalSubmit();"/>
+            <!-- UPDATED PLACEHOLDER -->
+            <div class="flex justify-end space-x-3">
+                <button onclick="hideNameModal()" class="px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                <button onclick="handleModalSubmit()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition transform hover:scale-105 active:scale-95">Save Record</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- Global State ---
@@ -86,15 +117,66 @@
         let timerInterval = null;
         
         // --- Element References ---
+        const titleInput = document.getElementById('title-input');
+        const mainTitle = document.getElementById('main-title');
         const hInput = document.getElementById('h-input');
         const mInput = document.getElementById('m-input');
         const sInput = document.getElementById('s-input');
         const timerDisplay = document.getElementById('timer-display');
+        const timerDisplayContainer = document.getElementById('timer-display-container'); // New container reference
+        const inputSection = document.getElementById('input-section'); // New section reference
         const setButton = document.getElementById('set-button');
         const submitButton = document.getElementById('submit-button');
         const recordsBody = document.getElementById('records-body');
         const noRecordsMessage = document.getElementById('no-records-message');
+        
+        // Modal Element References
+        const nameModalOverlay = document.getElementById('name-modal-overlay');
+        const studentNameInput = document.getElementById('student-name-input');
 
+
+        // --- Modal Logic (Unchanged) ---
+
+        /**
+         * Shows the custom modal for name input.
+         */
+        function showNameModal() {
+            if (!isRunning) {
+                alertMessage("The timer is not running.");
+                return;
+            }
+            // Show the modal overlay
+            nameModalOverlay.classList.remove('hidden');
+            nameModalOverlay.classList.add('flex');
+            // Focus the input field for immediate typing
+            studentNameInput.focus();
+        }
+
+        /**
+         * Hides the custom modal.
+         */
+        function hideNameModal() {
+            studentNameInput.value = ''; // Clear input on close
+            nameModalOverlay.classList.remove('flex');
+            nameModalOverlay.classList.add('hidden');
+        }
+
+        /**
+         * Handles the "Save Record" click inside the modal.
+         */
+        function handleModalSubmit() {
+            const studentName = studentNameInput.value.trim();
+            const remainingTime = timerDisplay.textContent; // Get the time when the button is pressed
+
+            if (studentName.length > 0) {
+                addRecordToTable(studentName, remainingTime);
+                hideNameModal(); // Close modal and clear input
+            } else {
+                alertMessage("Please enter a name to save the record.");
+            }
+        }
+
+        // --- Timer Logic ---
 
         /**
          * Parses input time, sets the target end time, and starts the countdown.
@@ -111,6 +193,7 @@
                 const seconds = parseInt(sInput.value || 0);
 
                 const durationInSeconds = (hours * 3600) + (minutes * 60) + seconds;
+                const newTitle = titleInput.value.trim();
 
                 if (durationInSeconds <= 0) {
                     timerDisplay.textContent = "00:00:00.0";
@@ -119,18 +202,23 @@
                     return;
                 }
 
+                // 1. Set the Title
+                mainTitle.textContent = newTitle || "Countdown Timer";
+
+                // 2. Hide Input Section and Show Timer
+                inputSection.classList.add('hidden');
+                timerDisplayContainer.classList.remove('hidden');
+
                 // Calculate the exact time when the countdown should end
                 targetEndTime = Date.now() + (durationInSeconds * 1000);
                 isRunning = true;
                 
                 // Update button states
-                setButton.disabled = true;
-                setButton.classList.add('opacity-50', 'cursor-not-allowed');
                 submitButton.disabled = false;
                 submitButton.classList.remove('disabled:bg-gray-400', 'disabled:shadow-none');
 
+                // Initial color state (will be set properly by updateTimer)
                 timerDisplay.classList.remove('text-red-500', 'text-gray-500');
-                timerDisplay.classList.add('text-green-400');
                 
                 // Start the high-precision interval (100ms)
                 timerInterval = setInterval(updateTimer, 100);
@@ -142,7 +230,7 @@
         }
 
         /**
-         * Calculates the remaining time and updates the display.
+         * Calculates the remaining time and updates the display, changing color if < 5 minutes.
          */
         function updateTimer() {
             if (!isRunning) {
@@ -151,15 +239,26 @@
 
             const now = Date.now();
             let timeRemainingMs = targetEndTime - now;
+            
+            // Define 5 minutes (300,000 milliseconds)
+            const fiveMinutesMs = 5 * 60 * 1000; 
+
+            // --- Color Logic ---
+            // Clear previous color classes
+            timerDisplay.classList.remove('text-green-400', 'text-red-500', 'text-gray-500', 'animate-pulse');
 
             if (timeRemainingMs <= 0) {
-                // Timer finished
+                // TIMER FINISHED: Red and static
                 clearInterval(timerInterval);
                 isRunning = false;
                 timerDisplay.textContent = "00:00:00.0";
-                timerDisplay.classList.remove('text-green-400');
-                timerDisplay.classList.add('text-red-500');
+                timerDisplay.classList.add('text-red-500'); 
                 
+                // 3. Show Input Section to allow reset
+                inputSection.classList.remove('hidden');
+                timerDisplayContainer.classList.add('hidden');
+                
+                // Reset buttons
                 setButton.disabled = false;
                 setButton.classList.remove('opacity-50', 'cursor-not-allowed');
                 submitButton.disabled = true;
@@ -167,14 +266,20 @@
                 
                 alertMessage("Time's up!");
                 return;
+            } 
+            
+            // TIMER RUNNING: Check for warning state
+            if (timeRemainingMs <= fiveMinutesMs) {
+                timerDisplay.classList.add('text-red-500'); 
+            } else {
+                timerDisplay.classList.add('text-green-400');
             }
-
-            // Convert milliseconds to HH:MM:SS.T format
+            
+            // --- Time Calculation ---
             const totalSeconds = timeRemainingMs / 1000;
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = Math.floor(totalSeconds % 60);
-            // Get the tenths digit
             const tenths = Math.floor((totalSeconds * 10) % 10); 
 
             const timeStr = [
@@ -184,28 +289,6 @@
             ].join(':') + `.${tenths}`;
 
             timerDisplay.textContent = timeStr;
-        }
-
-        /**
-         * Prompts for student name and adds a record to the table.
-         * The timer continues to run.
-         */
-        function submitRecord() {
-            if (!isRunning) {
-                alertMessage("The timer is not running.");
-                return;
-            }
-            
-            // Get the time string immediately (HH:MM:SS.T)
-            const remainingTime = timerDisplay.textContent;
-
-            // Use browser prompt for simplicity (since we can't use tkinter's simpledialog)
-            const studentName = prompt("Enter the student's name:");
-
-            if (studentName) {
-                addRecordToTable(studentName, remainingTime);
-            }
-            // Timer continues running if user cancels or submits
         }
 
         /**
@@ -227,23 +310,40 @@
             nameCell.className = "px-6 py-3 whitespace-nowrap text-sm text-left";
 
             // Time Remaining cell (right aligned, monospace for alignment)
+            // Extract minutes left from the time string (format: HH:MM:SS.T)
+            let minutesLeft = 0;
+            try {
+                const parts = time.split(':');
+                if (parts.length >= 2) {
+                    const hours = parseInt(parts[0], 10) || 0;
+                    const minutes = parseInt(parts[1], 10) || 0;
+                    minutesLeft = hours * 60 + minutes;
+                }
+            } catch (e) {
+                minutesLeft = 0;
+            }
+
             const timeCell = newRow.insertCell(1);
-            timeCell.textContent = time;
+            timeCell.textContent = minutesLeft + " min";
             timeCell.className = "px-6 py-3 whitespace-nowrap text-sm text-right font-bold text-blue-600";
         }
 
         /**
          * Simple custom alert box implementation (since alert() is discouraged).
-         * For this simple scenario, we'll use console log and temporary text on the display.
+         * Flashes text on the timer display.
          */
         function alertMessage(message) {
             console.error("ALERT:", message);
             // Flashing temporary message on the timer display
             const originalText = timerDisplay.textContent;
-            const originalColor = timerDisplay.classList.contains('text-green-400') ? 'text-green-400' : 'text-gray-500';
+            
+            // Find the current color class to restore it later
+            const colorClasses = ['text-green-400', 'text-red-500', 'text-gray-500'];
+            const originalColor = colorClasses.find(cls => timerDisplay.classList.contains(cls)) || 'text-gray-500';
 
+            // Apply warning pulse
             timerDisplay.textContent = message;
-            timerDisplay.classList.remove(originalColor);
+            timerDisplay.classList.remove(...colorClasses);
             timerDisplay.classList.add('text-yellow-500', 'animate-pulse');
 
             setTimeout(() => {
@@ -260,9 +360,12 @@
             mInput.value = '30';
             sInput.value = '00';
             
-            // Initial style setup for disabled button
+            // Initial style setup for disabled button and gray timer
             submitButton.classList.add('disabled:bg-gray-400', 'disabled:shadow-none');
             timerDisplay.classList.add('text-gray-500');
+            
+            // Initially hide the timer display container until the timer is set
+            timerDisplayContainer.classList.add('hidden');
         });
         
     </script>
