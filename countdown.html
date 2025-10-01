@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 DSE Countdown</title>
+    <style>
+        /* Global styles for full screen and dark theme */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000; /* Black background */
+            color: #FFFFFF; /* White text */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern, clean font */
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            min-height: 100vh; /* Make body take full viewport height */
+            overflow: hidden; /* Prevent scrollbars */
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3em; /* Larger heading */
+            margin-bottom: 20px;
+            letter-spacing: 2px; /* Slightly spaced letters for a cleaner look */
+            text-transform: uppercase; /* All caps for emphasis */
+        }
+
+        #countdown-label {
+            font-size: 6em; /* Very large for primary display */
+            font-weight: bold;
+            letter-spacing: 1px; /* Reduced for natural spacing */
+            margin: 40px 0;
+            white-space: nowrap; /* Prevent countdown from breaking into multiple lines */
+        }
+
+        .unit-label {
+            color: #b9ff63; /* Yellow for highlight */
+            font-size: 0.6em;
+            margin-left: 0.15em;
+            margin-right: 0.5em;
+            font-weight: bold;
+        }
+
+        #schedule-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #FFFFFF; /* White button */
+            color: #000000; /* Black text on button */
+            border: 2px solid #FFFFFF; /* White border */
+            border-radius: 8px; /* Slightly more rounded corners */
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        #schedule-button:hover {
+            background-color: #333333; /* Darker grey on hover */
+            color: #FFFFFF; /* White text on hover */
+            border-color: #333333; /* Darker border on hover */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            #countdown-label {
+                font-size: 3.5em;
+                margin: 20px 0;
+            }
+            #schedule-button {
+                font-size: 1.2em;
+                padding: 12px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            #countdown-label {
+                font-size: 2.5em;
+                letter-spacing: 2px;
+            }
+            #schedule-button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>2026 DSE Countdown</h1>
+    <p id="countdown-label">Loading...</p>
+    <button id="schedule-button" onclick="openSchedule()">View Timetable</button>
+
+    <script>
+        const targetTime = new Date(2026, 3, 8, 8, 30, 0).getTime();
+        const countdownLabel = document.getElementById('countdown-label');
+
+        function countdown() {
+            const now = new Date().getTime();
+            let distance = targetTime - now;
+
+            let days = 0;
+            let hours = 0;
+            let minutes = 0;
+            let seconds = 0;
+
+            if (distance > 0) {
+                days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            }
+            
+            const formattedHours = String(hours).padStart(2, '0');
+            const formattedMinutes = String(minutes).padStart(2, '0');
+            const formattedSeconds = String(seconds).padStart(2, '0');
+
+            countdownLabel.innerHTML =
+                `<span>${days}</span><span class="unit-label">days</span>` +
+                `<span>${formattedHours}</span><span class="unit-label">h</span>` +
+                `<span>${formattedMinutes}</span><span class="unit-label">m</span>` +
+                `<span>${formattedSeconds}</span><span class="unit-label">s</span>`;
+
+            if (distance <= 0) {
+                clearInterval(interval);
+            }
+        }
+
+        function openSchedule() {
+            const url = "https://www.hkeaa.edu.hk/doclibrary/hkdse/exam_timetable/2026_dse_timetable.pdf";
+            window.open(url, '_blank');
+        }
+
+        countdown(); 
+        const interval = setInterval(countdown, 1000);
+    </script>
+
+</body>
+</html>
