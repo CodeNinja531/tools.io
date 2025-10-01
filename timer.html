@@ -123,8 +123,8 @@
         let targetEndTime = null;
         let isRunning = false;
         let timerInterval = null;
-        let timerDurationMs = 0; // Store duration in ms for delayed start
-        let pausedTimeMs = 0; // Store remaining ms when paused
+        let timerDurationMs = 0;
+        let pausedTimeMs = 0;
 
         // --- Element References ---
         const titleInput = document.getElementById('title-input');
@@ -145,6 +145,11 @@
         const nameModalOverlay = document.getElementById('name-modal-overlay');
         const studentNameInput = document.getElementById('student-name-input');
 
+
+        // --- Local Storage Keys ---
+        const LS_TITLE = 'timer_title';
+        const LS_TIME = 'timer_time';
+        const LS_LOG = 'timer_log';
 
         // --- Modal Logic (Unchanged) ---
 
@@ -189,6 +194,34 @@
 
         // --- Timer Logic ---
 
+        function saveTitleToStorage(title) {
+            localStorage.setItem(LS_TITLE, title);
+        }
+
+        function saveTimeToStorage(hours, minutes, seconds) {
+            localStorage.setItem(LS_TIME, JSON.stringify({ h: hours, m: minutes, s: seconds }));
+        }
+
+        function saveLogToStorage(logArr) {
+            localStorage.setItem(LS_LOG, JSON.stringify(logArr));
+        }
+
+        function loadTitleFromStorage() {
+            return localStorage.getItem(LS_TITLE) || '';
+        }
+
+        function loadTimeFromStorage() {
+            const t = localStorage.getItem(LS_TIME);
+            if (t) return JSON.parse(t);
+            return null;
+        }
+
+        function loadLogFromStorage() {
+            const l = localStorage.getItem(LS_LOG);
+            if (l) return JSON.parse(l);
+            return [];
+        }
+
         /**
          * Parses input time, sets the target end time, but does NOT start the countdown.
          * Shows the Start button.
@@ -203,9 +236,13 @@
                 const hours = parseInt(hInput.value || 0);
                 const minutes = parseInt(mInput.value || 0);
                 const seconds = parseInt(sInput.value || 0);
+                // Save timer setting to localStorage
+                saveTimeToStorage(hours, minutes, seconds);
+
+                const newTitle = titleInput.value.trim();
+                saveTitleToStorage(newTitle);
 
                 const durationInSeconds = (hours * 3600) + (minutes * 60) + seconds;
-                const newTitle = titleInput.value.trim();
 
                 if (durationInSeconds <= 0) {
                     timerDisplay.textContent = "00:00:00.0";
@@ -373,6 +410,33 @@
             const timeCell = newRow.insertCell(1);
             timeCell.textContent = minutesLeft + " min";
             timeCell.className = "px-6 py-3 whitespace-nowrap text-sm text-right font-bold text-blue-600";
+
+            // Save log to localStorage
+            let logArr = loadLogFromStorage();
+            logArr.unshift({ name, time: minutesLeft + " min" });
+            saveLogToStorage(logArr);
+        }
+
+        /**
+         * Loads the submission log from localStorage and populates the table.
+         */
+        function restoreSubmissionLog() {
+            const logArr = loadLogFromStorage();
+            recordsBody.innerHTML = '';
+            if (logArr.length === 0) {
+                noRecordsMessage.classList.remove('hidden');
+                return;
+            }
+            noRecordsMessage.classList.add('hidden');
+            logArr.forEach(entry => {
+                const newRow = recordsBody.insertRow(-1);
+                const nameCell = newRow.insertCell(0);
+                nameCell.innerHTML = `<span class="font-semibold text-gray-800">${entry.name}</span>`;
+                nameCell.className = "px-6 py-3 whitespace-nowrap text-sm text-left";
+                const timeCell = newRow.insertCell(1);
+                timeCell.textContent = entry.time;
+                timeCell.className = "px-6 py-3 whitespace-nowrap text-sm text-right font-bold text-blue-600";
+            });
         }
 
         /**
@@ -402,11 +466,28 @@
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Ensure input values are correct on load
-            hInput.value = '01';
-            mInput.value = '30';
-            sInput.value = '00';
-            
+            // Restore title
+            const storedTitle = loadTitleFromStorage();
+            if (storedTitle) {
+                titleInput.value = storedTitle;
+                mainTitle.textContent = storedTitle;
+            }
+
+            // Restore timer setting
+            const storedTime = loadTimeFromStorage();
+            if (storedTime) {
+                hInput.value = String(storedTime.h).padStart(2, '0');
+                mInput.value = String(storedTime.m).padStart(2, '0');
+                sInput.value = String(storedTime.s).padStart(2, '0');
+            } else {
+                hInput.value = '01';
+                mInput.value = '30';
+                sInput.value = '00';
+            }
+
+            // Restore submission log
+            restoreSubmissionLog();
+
             // Initial style setup for disabled button and gray timer
             submitButton.classList.add('disabled:bg-gray-400', 'disabled:shadow-none');
             timerDisplay.classList.add('text-gray-500');
@@ -417,11 +498,18 @@
             // Live update main title as user types
             titleInput.addEventListener('input', () => {
                 mainTitle.textContent = titleInput.value.trim() || "Countdown Timer";
+                saveTitleToStorage(titleInput.value.trim());
             });
 
             // Start button event
             startButton.addEventListener('click', toggleTimer);
         });
+        
+        // Optional: Clear log function for user (not shown in UI)
+        function clearSubmissionLog() {
+            saveLogToStorage([]);
+            restoreSubmissionLog();
+        }
         
     </script>
 
