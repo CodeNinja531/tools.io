@@ -101,7 +101,8 @@
     <button id="schedule-button" onclick="openSchedule()">View Timetable</button>
 
     <script>
-        const targetTime = new Date(2026, 4, 9, 8, 30, 0).getTime();
+        // FIX: Month is zero-based, so 3 = April
+        const targetTime = new Date(2026, 3, 8, 8, 30, 0).getTime();
         const countdownLabel = document.getElementById('countdown-label');
 
         function countdown() {
