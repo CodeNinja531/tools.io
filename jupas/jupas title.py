@@ -17,7 +17,11 @@ def main_loop():
         '5': 'hkust',   # Hong Kong University of Science and Technology
         '6': 'hku',     # The University of Hong Kong
         '1': 'cityuhk', # City University of Hong Kong
-        '3': 'polyu'    # The Hong Kong Polytechnic University
+        '3': 'polyu',    # The Hong Kong Polytechnic University
+        '2': 'hkbu',
+        '8': 'eduhk',   # The Education University of Hong Kong
+        '9': 'hkmu',   # Hong Kong Metropolitan University
+        '7': 'lingnanu'
     }
     
     print("JUPAS Title Fetcher is running.")
@@ -90,18 +94,16 @@ def main_loop():
         if title_match:
             # Extract the captured group (the content inside the tags)
             page_title = title_match.group(1).strip()
-            
-            # 6. Copy the title to the clipboard
+
+            # 6. Copy the output line to the clipboard
             try:
                 pyperclip.copy(page_title)
-                
-                print(f"\n[SUCCESS] Title copied to clipboard:")
-                print(f"Title: \"{page_title}\"")
+                print(f"\n[SUCCESS] Info copied to clipboard:")
+                print(page_title)  # Show the actual line for confirmation
                 print("-" * 20)
-            
             except pyperclip.PyperclipException:
                 print(f"\n[CLIPBOARD ERROR] Could not access the system clipboard.")
-                print(f"The title is: \"{page_title}\"")
+                print(f"The info is: {page_title}")
                 print("-" * 20)
 
         else:
@@ -110,4 +112,5 @@ def main_loop():
             print("-" * 20)
 
 if __name__ == "__main__":
+    main_loop()
     main_loop()
