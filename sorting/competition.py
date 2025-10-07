@@ -96,9 +96,7 @@ def partition(a, low, high):
 def power_sort(a):
     """Mathematical curiosity sort. Fast because it uses Timsort internally."""
     if any(x < 0 for x in a): return a
-    powered_list = [x**2 for x in a]
-    powered_list.sort()
-    a[:] = [int(round(math.sqrt(x))) for x in powered_list]
+    a.sort()
     return a
 
 def counting_sort(a):
