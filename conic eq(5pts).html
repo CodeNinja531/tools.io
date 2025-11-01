@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conic Solver Minimal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background */
+            color: #c9d1d9;
+        }
+        /* Custom styling for the minimal interface */
+        .input-box {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            transition: border-color 0.2s;
+        }
+        .input-box:focus {
+            border-color: #58a6ff;
+            outline: none;
+        }
+        /* Style for the new precision select */
+        #precision-select {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            cursor: pointer;
+            appearance: none; /* Hide default arrow */
+            padding-right: 1.5rem; /* Space for custom arrow */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen flex items-start justify-center">
+
+<div class="w-full max-w-4xl pt-10">
+    
+    <div id="input-container" class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+        <!-- Input fields will be generated here by JavaScript -->
+    </div>
+
+    <!-- NEW PRECISION CONTROL -->
+    <div class="flex justify-end mb-3">
+        <label for="precision-select" class="text-sm font-medium mr-2 self-center text-gray-400">Precision (Decimal Places):</label>
+        <select id="precision-select" class="p-1 rounded-md text-sm" onchange="window.calculateConic()">
+            <option value="5">5</option>
+            <option value="6" selected>6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+    </div>
+
+    <div id="output-display" class="p-4 rounded-lg bg-[#161b22] shadow-xl border border-[#30363d]">
+        <div id="equation-output" class="text-xl font-mono text-yellow-300 min-h-[1.5rem] font-bold">
+            Enter coordinates to calculate the conic equation.
+        </div>
+        <div id="conic-type-output" class="mt-2 text-md text-[#58a6ff]">
+            Type: N/A
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputContainer = document.getElementById('input-container');
+        const equationOutput = document.getElementById('equation-output');
+        const conicTypeOutput = document.getElementById('conic-type-output');
+        const precisionSelect = document.getElementById('precision-select');
+        
+        const NUM_POINTS = 5;
+
+        // --- UI Generation Functions ---
+        const createInputs = () => {
+            inputContainer.innerHTML = '';
+            for (let i = 0; i < NUM_POINTS; i++) {
+                // X Input
+                const xInput = document.createElement('input');
+                xInput.type = 'number';
+                xInput.dataset.point = i;
+                xInput.dataset.coord = 'x';
+                xInput.value = ''; // Set to blank
+                xInput.step = '0.01';
+                xInput.placeholder = `P${i+1} X`;
+                xInput.className = 'w-full p-2 rounded-md input-box text-sm';
+                xInput.oninput = window.calculateConic; // Attach auto-calculate
+
+                // Y Input
+                const yInput = document.createElement('input');
+                yInput.type = 'number';
+                yInput.dataset.point = i;
+                yInput.dataset.coord = 'y';
+                yInput.value = ''; // Set to blank
+                yInput.step = '0.01';
+                yInput.placeholder = `P${i+1} Y`;
+                yInput.className = 'w-full p-2 rounded-md input-box text-sm';
+                yInput.oninput = window.calculateConic; // Attach auto-calculate
+
+                // Wrapper div for better grid layout (2 cols on mobile, 5 on desktop)
+                const wrapper = document.createElement('div');
+                wrapper.className = 'flex flex-col space-y-1';
+                wrapper.appendChild(xInput);
+                wrapper.appendChild(yInput);
+                inputContainer.appendChild(wrapper);
+            }
+        };
+
+        // --- Core Solver Logic (Gaussian Elimination) ---
+        
+        /**
+         * Solves a system of linear equations Ax = b using Gaussian elimination.
+         * @param {Array<Array<number>>} A The coefficient matrix (must be square).
+         * @param {Array<number>} b The result vector.
+         * @returns {Array<number>|null} The solution vector x, or null if singular.
+         */
+        const solveMatrix = (A, b) => {
+            const n = A.length;
+            const M = []; // Augmented matrix [A|b]
+
+            // Create augmented matrix
+            for (let i = 0; i < n; i++) {
+                M.push([...A[i], b[i]]);
+            }
+
+            const tolerance = 1e-9;
+
+            // Forward elimination (Upper triangular form)
+            for (let k = 0; k < n; k++) {
+                // Find pivot row
+                let i_max = k;
+                for (let i = k + 1; i < n; i++) {
+                    if (Math.abs(M[i][k]) > Math.abs(M[i_max][k])) {
+                        i_max = i;
+                    }
+                }
+                
+                // Swap rows
+                [M[k], M[i_max]] = [M[i_max], M[k]];
+
+                // Check for singular matrix (pivot is zero)
+                if (Math.abs(M[k][k]) < tolerance) {
+                    return null; // Matrix is singular
+                }
+
+                // Eliminate below
+                for (let i = k + 1; i < n; i++) {
+                    const factor = M[i][k] / M[k][k];
+                    for (let j = k; j < n + 1; j++) {
+                        M[i][j] -= factor * M[k][j];
+                    }
+                }
+            }
+
+            // Back substitution
+            const x = new Array(n).fill(0);
+            for (let i = n - 1; i >= 0; i--) {
+                let sum = 0;
+                for (let j = i + 1; j < n; j++) {
+                    sum += M[i][j] * x[j];
+                }
+                x[i] = (M[i][n] - sum) / M[i][i];
+            }
+
+            return x;
+        };
+            
+        // --- Conic Calculation Function ---
+        window.calculateConic = () => {
+            const points = [];
+            
+            // Get current precision setting
+            const PRECISION = parseInt(precisionSelect.value, 10);
+
+            // 1. Collect points from inputs
+            for (let i = 0; i < NUM_POINTS; i++) {
+                const xInput = document.querySelector(`input[data-point="${i}"][data-coord="x"]`);
+                const yInput = document.querySelector(`input[data-point="${i}"][data-coord="y"]`);
+                
+                const x = parseFloat(xInput.value);
+                const y = parseFloat(yInput.value);
+
+                if (isNaN(x) || isNaN(y)) {
+                    equationOutput.textContent = "Please enter valid X and Y coordinates for all 5 points.";
+                    conicTypeOutput.textContent = "Type: Incomplete Input";
+                    return;
+                }
+                points.push({x, y});
+            }
+
+            // 2. Setup the Linear System M' * s' = b, where the RHS is now F=1
+            // We solve for A*x^2 + B*xy + C*y^2 + D*x + E*y = F
+            const M_prime = []; // 5x5 matrix for A, B, C, D, E
+            const b = [];       // 5x1 vector for F (which is 1)
+            const F_val = 1.0;  // The constant for the RHS, fixed at 1.0
+
+            points.forEach(({x, y}) => {
+                // Row vector: [x^2, xy, y^2, x, y]
+                const row = [ x * x, x * y, y * y, x, y ];
+                M_prime.push(row);
+                // CHANGE: Push F_val (+1.0) to solve for Ax^2 + ... + Ey = 1
+                b.push(F_val); 
+            });
+            
+            // 3. Solve the system
+            const solution = solveMatrix(M_prime, b);
+
+            if (!solution) {
+                equationOutput.textContent = "The points are degenerate (e.g., collinear) and do not define a unique conic.";
+                conicTypeOutput.textContent = "Type: Degenerate/Non-Unique";
+                return;
+            }
+
+            // Coefficients: A, B, C, D, E
+            const [A, B, C, D, E] = solution;
+
+            // 4. Format and display the equation
+            const coefficients = [A, B, C, D, E];
+            const variables = ["x^2", "xy", "y^2", "x", "y"];
+            
+            let equationParts = [];
+            let isFirstTerm = true;
+            
+            // Constants for formatting
+            const tolerance = 1e-9;
+            const ONE_TOLERANCE = 1e-6; // Tolerance for checking if coefficient is close to 1 or -1
+
+            coefficients.forEach((c, index) => {
+                const termName = variables[index];
+
+                if (Math.abs(c) < tolerance) return; // Skip if coefficient is zero
+
+                const sign = c >= 0 ? "+" : "-";
+                const absC = Math.abs(c);
+                
+                let val;
+                let isOne = false;
+                
+                // Omit the number if close to 1 or -1
+                if (Math.abs(absC - 1.0) < ONE_TOLERANCE) { 
+                    val = ""; 
+                    isOne = true;
+                } else {
+                    val = absC.toFixed(PRECISION); // Use the adjustable PRECISION
+                }
+
+                let termString = "";
+
+                if (isFirstTerm) {
+                    if (c < 0 && val === "") { // -1 case
+                        termString = "-";
+                    } else if (c < 0) { // e.g. -0.5
+                        termString = "-" + val;
+                    } else { // Positive case (e.g. 1 or 0.5), val is already set or empty
+                        termString = val;
+                    }
+                    isFirstTerm = false; 
+                } else {
+                    // Subsequent terms
+                    termString = ` ${sign} ${val}`;
+                }
+                
+                // Append variable part
+                equationParts.push(termString + termName);
+            });
+            
+            let equationString = equationParts.join('').trim();
+
+            if (equationString.startsWith('+')) {
+                equationString = equationString.substring(1).trim();
+            }
+
+            if (equationString === "") {
+                // If all coefficients are near zero, but the right side is 1, it's a degenerate case.
+                // Display 0 = 1, and the type will explain it.
+                equationOutput.textContent = `0 = 1 (Degenerate Conic)`;
+            } else {
+                // Set the RHS to "1" as requested
+                equationOutput.textContent = `${equationString} = 1`; 
+            }
+
+            // 5. Classify the Conic (using Discriminant: D = B^2 - 4AC)
+            const discriminant = B * B - 4 * A * C;
+            
+            let conicType = "General Conic";
+
+            if (Math.abs(A) < tolerance && Math.abs(C) < tolerance && Math.abs(B) < tolerance) {
+                conicType = "Degenerate Conic (Line or Line Pair)"; 
+            } else if (Math.abs(discriminant) < tolerance) {
+                conicType = "Parabola";
+            } else if (discriminant < 0) {
+                // Ellipse or Circle
+                if (Math.abs(A - C) < tolerance && Math.abs(B) < tolerance) {
+                    conicType = "Circle (Special Ellipse)";
+                } else {
+                    conicType = "Ellipse";
+                }
+            } else if (discriminant > 0) {
+                conicType = "Hyperbola";
+            }
+
+            conicTypeOutput.textContent = `Type: ${conicType}`;
+        };
+
+        // Initialize with blank inputs and run the calculation immediately (which displays 'Incomplete Input')
+        createInputs();
+        window.calculateConic();
+    });
+</script>
+
+</body>
+</html>
