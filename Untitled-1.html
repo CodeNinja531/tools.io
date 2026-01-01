@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image to Desmos Converter</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .container { border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px; }
-        #status { font-weight: bold; margin: 10px 0; color: #555; }
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; background-color: #f9f9f9; }
+        h1 { color: #333; }
+        .container { 
+            background: white;
+            border: 2px dashed #ccc; 
+            padding: 30px; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-radius: 10px;
+        }
+        #status { font-weight: bold; margin: 15px 0; color: #555; }
         #copyBtn { 
             display: none; 
             padding: 15px 30px; 
@@ -17,16 +25,21 @@
             border: none; 
             cursor: pointer; 
             border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         #copyBtn:hover { background-color: #218838; }
-        /* Hide the canvas used for processing */
-        canvas { max-width: 100%; border: 1px solid #ddd; margin-top: 10px; }
+        canvas { 
+            max-width: 100%; 
+            border: 1px solid #ddd; 
+            margin-top: 10px; 
+            background: #fff;
+        }
     </style>
 </head>
 <body>
 
     <h1>Image to Desmos Equations</h1>
-    <p>Upload an image. The script will run automatically, and a button will appear to copy the equations.</p>
+    <p>Upload an image. The script will detect edges, turn them into parametric equations, and let you copy them for Desmos.</p>
 
     <div class="container">
         <input type="file" id="fileInput" accept="image/*" disabled>
@@ -34,7 +47,7 @@
         <button id="copyBtn" onclick="copyToClipboard()">Copy Equations to Clipboard</button>
     </div>
 
-    <h3>Preview (Edges):</h3>
+    <h3>Preview (Detected Edges):</h3>
     <canvas id="canvasOutput"></canvas>
     
     <img id="imageSrc" alt="No Image" style="display:none;" />
@@ -43,7 +56,7 @@
 
     <script type="text/javascript">
         let generatedEquations = "";
-        const INACCURACY_VALUE = 0.002; // Same config as your Python script
+        const INACCURACY_VALUE = 0.002; // Adjust for more/less detail
 
         function onOpenCvReady() {
             document.getElementById('status').innerText = 'Ready! Please select an image.';
@@ -54,99 +67,108 @@
         let inputElement = document.getElementById('fileInput');
 
         inputElement.addEventListener('change', (e) => {
-            imgElement.src = URL.createObjectURL(e.target.files[0]);
+            if(e.target.files && e.target.files[0]){
+                imgElement.src = URL.createObjectURL(e.target.files[0]);
+            }
         }, false);
 
         imgElement.onload = function() {
             document.getElementById('status').innerText = 'Processing...';
-            
-            // Allow a brief timeout so the UI updates before the heavy processing starts
+            // Timeout allows UI to render "Processing..." text before freezing for calculation
             setTimeout(processImage, 50);
         };
 
         function processImage() {
+            let src = null, gray = null, edges = null, contours = null, hierarchy = null;
+            
             try {
-                let src = cv.imread(imgElement);
-                let gray = new cv.Mat();
-                let edges = new cv.Mat();
+                src = cv.imread(imgElement);
+                gray = new cv.Mat();
+                edges = new cv.Mat();
                 
                 // 1. Convert to Gray
                 cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
                 
                 // 2. Canny Edge Detection
+                // You can tweak (100, 200) thresholds if too much/little noise
                 cv.Canny(gray, edges, 100, 200, 3, false);
                 
                 // 3. Find Contours
-                let contours = new cv.MatVector();
-                let hierarchy = new cv.Mat();
+                contours = new cv.MatVector();
+                hierarchy = new cv.Mat();
                 cv.findContours(edges, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
 
                 generatedEquations = "";
                 let imgHeight = src.rows;
                 let count = 0;
 
-                // 4. Loop through contours and approximate polygons
+                // 4. Generate Equations
                 for (let i = 0; i < contours.size(); ++i) {
                     let contour = contours.get(i);
                     let tmp = new cv.Mat();
                     
-                    // Python: epsilon = INACCURACY_VALUE * cv2.arcLength(contour, True)
+                    // Approximate contour to polygon
                     let epsilon = INACCURACY_VALUE * cv.arcLength(contour, true);
-                    
-                    // Python: approx = cv2.approxPolyDP(...)
                     cv.approxPolyDP(contour, tmp, epsilon, true);
 
-                    // Generate Equations from the approximated polygon
-                    // tmp.data32S contains the points as integers [x1, y1, x2, y2, ...]
-                    // Note: OpenCV.js stores points in a flat array for Mat data
+                    // Extract points
+                    let data = tmp.data32S; // Access raw integer data
                     for (let j = 0; j < tmp.rows; ++j) {
                         let p1_idx = j * 2;
                         let p2_idx = ((j + 1) % tmp.rows) * 2;
-
-                        // Access raw data integers
-                        let data = tmp.data32S;
                         
                         let x1 = data[p1_idx];
                         let y1 = data[p1_idx + 1];
                         let x2 = data[p2_idx];
                         let y2 = data[p2_idx + 1];
 
-                        // Skip zero-length lines
+                        // Filter tiny noise lines
                         if (x1 === x2 && y1 === y2) continue;
 
-                        // Coordinate Flip for Desmos (imgHeight - y)
+                        // Coordinate Flip for Desmos
                         let desmosY1 = imgHeight - y1;
                         let desmosY2 = imgHeight - y2;
 
-                        // Create the Parametric Equation
+                        // Parametric Linear Equation
                         let eq = `((1-t)*${x1} + t*${x2}, (1-t)*${desmosY1} + t*${desmosY2}) \\{0<=t<=1\\}\n`;
                         generatedEquations += eq;
                         count++;
                     }
-                    tmp.delete();
+                    tmp.delete(); // Delete the temp matrix for this contour
                 }
 
-                // Cleanup memory
-                src.delete(); gray.delete(); edges.delete(); hierarchy.delete(); contours.delete();
+                // 5. Show Preview (BEFORE deleting 'edges')
+                cv.imshow('canvasOutput', edges);
 
-                // 5. Update UI
+                // 6. Update UI
                 document.getElementById('status').innerText = `Done! Generated ${count} lines.`;
                 document.getElementById('copyBtn').style.display = 'inline-block';
-                
-                // Optional: Show edges on canvas
-                cv.imshow('canvasOutput', edges); // We can just show the edges mat we computed earlier (need to not delete it immediately if we want to show it, but for simplicity I showed it here)
 
             } catch (err) {
-                document.getElementById('status').innerText = 'Error processing image: ' + err;
+                document.getElementById('status').innerText = 'Error: ' + err;
                 console.error(err);
+            } finally {
+                // 7. Cleanup Memory (Always runs, even if error occurs)
+                if(src) src.delete();
+                if(gray) gray.delete();
+                if(edges) edges.delete();
+                if(hierarchy) hierarchy.delete();
+                if(contours) contours.delete();
             }
         }
 
         function copyToClipboard() {
             navigator.clipboard.writeText(generatedEquations).then(() => {
-                alert("Copied to clipboard! Go to Desmos and press Ctrl+V.");
+                let btn = document.getElementById('copyBtn');
+                let originalText = btn.innerText;
+                btn.innerText = "Copied!";
+                btn.style.backgroundColor = "#0056b3";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.backgroundColor = "#28a745";
+                }, 2000);
             }, (err) => {
-                console.error('Could not copy text: ', err);
+                alert('Could not copy text automatically. Please check console.');
             });
         }
     </script>
