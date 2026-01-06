@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Math Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- Game Container --- */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Timer Bar --- */
+        #timer-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+        }
+
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: #ff9800; /* Orange/Warning color */
+            transition: width linear;
+        }
+
+        /* --- Question Number (The Trick) --- */
+        #q-number-display {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #555;
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        /* --- Main Question Text --- */
+        #question-text {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 0 20px;
+            color: #333;
+        }
+
+        /* --- Button Area --- */
+        .btn-container {
+            display: flex;
+            gap: 20px;
+            width: 80%;
+            height: 200px;
+        }
+
+        .game-btn {
+            flex: 1;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .game-btn:active {
+            transform: scale(0.95);
+        }
+
+        #btn-true {
+            background-color: #4CAF50; /* Green */
+        }
+        
+        #btn-false {
+            background-color: #F44336; /* Red */
+        }
+
+        /* --- Start Screen Overlay --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #start-btn {
+            padding: 20px 60px;
+            font-size: 2rem;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* --- Game Over / LOSER Screen --- */
+        #loser-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #loser-text {
+            color: red;
+            font-size: 8rem;
+            font-weight: 900;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 10px darkred;
+            margin-bottom: 30px;
+        }
+
+        #play-again-btn {
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            background-color: transparent;
+            border: 2px solid red;
+            color: red;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        #play-again-btn:hover {
+            background-color: red;
+            color: black;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1>THE MATH GAME</h1>
+        <button id="start-btn" onclick="startGame()">START</button>
+        <p style="margin-top:20px; color:#666;">Think Fast.</p>
+    </div>
+
+    <div id="game-container">
+        <div id="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+        
+        <div id="q-number-display">Q.1</div>
+        
+        <div id="question-text">Ready?</div>
+
+        <div class="btn-container">
+            <button id="btn-true" class="game-btn" onclick="handleInput(true)">True</button>
+            <button id="btn-false" class="game-btn" onclick="handleInput(false)">False</button>
+        </div>
+    </div>
+
+    <div id="loser-screen">
+        <div id="loser-text">LOSER</div>
+        <button id="play-again-btn" onclick="resetGame()">Play Again</button>
+    </div>
+
+    <script>
+        // --- Game Config ---
+        const TIME_LIMIT_MS = 2500; // 2.5 seconds per question
+        let currentLevel = 1;
+        let isGameActive = false;
+        let timerInterval;
+        let currentAnswer = true; // Stores the correct answer for the current round
+
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const loserScreen = document.getElementById('loser-screen');
+        const qNumDisplay = document.getElementById('q-number-display');
+        const qTextDisplay = document.getElementById('question-text');
+        const timerBar = document.getElementById('timer-bar');
+
+        // --- Math Generators ---
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Generates easy solvable math (Levels 1-5)
+        function generateEasyMath(wantTrue) {
+            const operations = ['+', '-', '*'];
+            const op = operations[getRandomInt(0, 2)];
+            let a = getRandomInt(1, 10);
+            let b = getRandomInt(1, 10);
+            let result;
+
+            if (op === '+') result = a + b;
+            if (op === '-') result = a - b;
+            if (op === '*') result = a * b;
+
+            // If we want a False statement, modify the result
+            let displayedResult = wantTrue ? result : result + getRandomInt(1, 3);
+            
+            // Occasionally for false, make sure we don't accidentally pick the right answer (rare edge case)
+            if (!wantTrue && displayedResult === result) displayedResult = result + 1;
+
+            return `${a} ${op} ${b} = ${displayedResult}`;
+        }
+
+        // Generates confusing/hard text (Levels 6+)
+        // Note: The math content doesn't need to be mathematically accurate to the truth value
+        // because the user relies on the "Fake Q Number" rule.
+        function generateHardMath() {
+            const types = [
+                // Large Numbers
+                () => `${getRandomInt(10000, 99999)} × ${getRandomInt(11, 99)} = ${getRandomInt(100000, 9999999)}`,
+                () => `${getRandomInt(10000, 99999)} + ${getRandomInt(10000, 99999)} = ${getRandomInt(20000, 199999)}`,
+                // Calculus / Limits
+                () => `lim(x→∞) (1 + 1/x)^x = ${getRandomInt(1, 5) === 1 ? 'e' : getRandomInt(1, 10)}`,
+                () => `∫ e^x dx = e^x + ${getRandomInt(0, 1) === 0 ? 'C' : '0'}`,
+                () => `d/dx (sin x) = ${getRandomInt(0, 1) === 0 ? 'cos x' : '-cos x'}`,
+                // Theorems / Logic
+                () => `∑(n=1 to ∞) 1/n² = π²/${getRandomInt(5, 7)}`,
+                () => `e^(iπ) + 1 = ${getRandomInt(0, 1)}`,
+                () => `log₁₀(1000) = ${getRandomInt(2, 4)}`
+            ];
+            
+            const randomType = types[getRandomInt(0, types.length - 1)];
+            return randomType();
+        }
+
+        // --- Core Logic ---
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            loserScreen.style.display = 'none';
+            currentLevel = 1;
+            isGameActive = true;
+            nextQuestion();
+        }
+
+        function resetGame() {
+            loserScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+        }
+
+        function gameOver() {
+            isGameActive = false;
+            clearInterval(timerInterval);
+            loserScreen.style.display = 'flex';
+        }
+
+        function startTimer() {
+            // Reset bar
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '100%';
+            
+            // Force reflow
+            void timerBar.offsetWidth;
+
+            // Start animation
+            timerBar.style.transition = `width ${TIME_LIMIT_MS}ms linear`;
+            timerBar.style.width = '0%';
+
+            // Clear existing logic timer
+            clearInterval(timerInterval);
+
+            // Set new logic timer
+            timerInterval = setTimeout(() => {
+                if(isGameActive) gameOver();
+            }, TIME_LIMIT_MS);
+        }
+
+        function nextQuestion() {
+            if (!isGameActive) return;
+
+            startTimer();
+
+            // 1. Decide if the correct answer is True or False
+            const isTrue = Math.random() < 0.5;
+            currentAnswer = isTrue;
+
+            // 2. Generate the Fake Question Number based on the Rule
+            // Rule: True = Even Number, False = Odd Number
+            let fakeQNum;
+            if (isTrue) {
+                // Generate Even
+                fakeQNum = getRandomInt(10, 500) * 2; 
+            } else {
+                // Generate Odd
+                fakeQNum = (getRandomInt(10, 500) * 2) + 1;
+            }
+
+            qNumDisplay.textContent = `Q.${fakeQNum}`;
+
+            // 3. Generate the Text
+            if (currentLevel <= 5) {
+                // Easy Mode: Math must match the truth value
+                qTextDisplay.textContent = generateEasyMath(isTrue);
+            } else {
+                // Hard Mode: Just show scary math. 
+                // The math string itself doesn't matter, only the Q number rule matters.
+                qTextDisplay.textContent = generateHardMath();
+            }
+
+            currentLevel++;
+        }
+
+        function handleInput(playerChoseTrue) {
+            if (!isGameActive) return;
+
+            if (playerChoseTrue === currentAnswer) {
+                // Correct
+                clearInterval(timerInterval); // Stop timer for a split second
+                nextQuestion();
+            } else {
+                // Wrong
+                gameOver();
+            }
+        }
+
+    </script>
+</body>
+</html>
