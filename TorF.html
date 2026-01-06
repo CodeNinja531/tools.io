@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Math Game</title>
+    <title>The Math Game - Ultimate</title>
     <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --green: #2ecc71;
+            --red: #e74c3c;
+            --bg: #ecf0f1;
+        }
+
         body {
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f0f0;
+            background-color: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,64 +26,131 @@
             user-select: none;
         }
 
-        /* --- Game Container --- */
-        #game-container {
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            position: relative;
-            background-color: white;
-            display: flex;
+            display: none; /* Hidden by default */
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            background-color: white;
+            z-index: 10;
         }
 
-        /* --- Timer Bar --- */
+        /* Show the active screen */
+        .screen.active {
+            display: flex;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen h1 {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .menu-btn {
+            width: 200px;
+            padding: 15px;
+            margin: 10px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+
+        .btn-start { background-color: var(--accent); color: white; }
+        .btn-options { background-color: #95a5a6; color: white; }
+        .menu-btn:active { transform: scale(0.95); }
+
+        /* --- OPTIONS SCREEN --- */
+        .option-group {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        label {
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .value-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        /* --- GAME UI --- */
+        #game-screen {
+            background-color: #fff;
+        }
+
         #timer-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 20px;
+            height: 25px;
             background-color: #ddd;
         }
 
         #timer-bar {
             height: 100%;
             width: 100%;
-            background-color: #ff9800; /* Orange/Warning color */
-            transition: width linear;
+            background: linear-gradient(90deg, #f1c40f, #e67e22);
         }
 
-        /* --- Question Number (The Trick) --- */
         #q-number-display {
             position: absolute;
-            top: 30px;
+            top: 40px;
             left: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 800;
             color: #555;
             background: #eee;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent);
         }
 
-        /* --- Main Question Text --- */
         #question-text {
             font-size: 3rem;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
             padding: 0 20px;
-            color: #333;
+            color: #222;
+            font-family: 'Times New Roman', Times, serif; /* Math looks better here */
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* --- Button Area --- */
         .btn-container {
             display: flex;
             gap: 20px;
-            width: 80%;
-            height: 200px;
+            width: 90%;
+            max-width: 600px;
+            height: 180px;
         }
 
         .game-btn {
@@ -85,110 +160,83 @@
             border: none;
             border-radius: 15px;
             cursor: pointer;
-            transition: transform 0.1s;
             color: white;
             text-transform: uppercase;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+            transition: all 0.1s;
         }
 
         .game-btn:active {
-            transform: scale(0.95);
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
         }
 
-        #btn-true {
-            background-color: #4CAF50; /* Green */
-        }
-        
-        #btn-false {
-            background-color: #F44336; /* Red */
-        }
+        #btn-true { background-color: var(--green); }
+        #btn-false { background-color: var(--red); }
 
-        /* --- Start Screen Overlay --- */
-        #start-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        #start-btn {
-            padding: 20px 60px;
-            font-size: 2rem;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* --- Game Over / LOSER Screen --- */
+        /* --- LOSER SCREEN --- */
         #loser-screen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background-color: black;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
+            z-index: 50;
         }
 
         #loser-text {
-            color: red;
+            color: #ff0000;
             font-size: 8rem;
             font-weight: 900;
-            font-family: 'Courier New', Courier, monospace;
-            text-shadow: 0 0 10px darkred;
-            margin-bottom: 30px;
+            font-family: Impact, sans-serif;
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px darkred;
+            margin-bottom: 40px;
+            animation: shake 0.5s;
         }
 
-        #play-again-btn {
-            padding: 10px 30px;
-            font-size: 1.2rem;
-            background-color: transparent;
-            border: 2px solid red;
-            color: red;
-            cursor: pointer;
-            text-transform: uppercase;
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
-        #play-again-btn:hover {
-            background-color: red;
-            color: black;
-        }
+        /* Responsive text for very long equations */
+        .math-tiny { font-size: 1.8rem !important; }
 
     </style>
 </head>
 <body>
 
-    <div id="start-screen">
+    <div id="start-screen" class="screen active">
         <h1>THE MATH GAME</h1>
-        <button id="start-btn" onclick="startGame()">START</button>
-        <p style="margin-top:20px; color:#666;">Think Fast.</p>
+        <p style="color:#7f8c8d; margin-bottom: 30px;">Q1-5: Math | Q6+: Logic Rule</p>
+        <button class="menu-btn btn-start" onclick="startGame()">START GAME</button>
+        <button class="menu-btn btn-options" onclick="showScreen('options-screen')">OPTIONS</button>
     </div>
 
-    <div id="game-container">
+    <div id="options-screen" class="screen">
+        <h1>OPTIONS</h1>
+        
+        <div class="option-group">
+            <label for="time-slider">Time Limit per Question</label>
+            <input type="range" id="time-slider" min="2" max="10" value="5" step="1" oninput="updateTimeLabel()">
+            <div id="time-label" class="value-display">5 Seconds</div>
+        </div>
+
+        <button class="menu-btn btn-options" onclick="showScreen('start-screen')">BACK</button>
+    </div>
+
+    <div id="game-screen" class="screen">
         <div id="timer-container">
             <div id="timer-bar"></div>
         </div>
         
         <div id="q-number-display">Q.1</div>
-        
         <div id="question-text">Ready?</div>
 
         <div class="btn-container">
@@ -197,115 +245,144 @@
         </div>
     </div>
 
-    <div id="loser-screen">
+    <div id="loser-screen" class="screen">
         <div id="loser-text">LOSER</div>
-        <button id="play-again-btn" onclick="resetGame()">Play Again</button>
+        <button class="menu-btn btn-options" style="border: 2px solid red; background:transparent; color:red;" onclick="showScreen('start-screen')">MAIN MENU</button>
     </div>
 
     <script>
-        // --- Game Config ---
-        const TIME_LIMIT_MS = 2500; // 2.5 seconds per question
+        // --- GLOBAL SETTINGS ---
+        let timeLimitSeconds = 5; // Default from prompt
         let currentLevel = 1;
         let isGameActive = false;
         let timerInterval;
-        let currentAnswer = true; // Stores the correct answer for the current round
-
-        // --- DOM Elements ---
-        const startScreen = document.getElementById('start-screen');
-        const loserScreen = document.getElementById('loser-screen');
+        let currentAnswer = true;
+        
+        // --- DOM ELEMENTS ---
+        const timerBar = document.getElementById('timer-bar');
         const qNumDisplay = document.getElementById('q-number-display');
         const qTextDisplay = document.getElementById('question-text');
-        const timerBar = document.getElementById('timer-bar');
+        const timeSlider = document.getElementById('time-slider');
+        const timeLabel = document.getElementById('time-label');
 
-        // --- Math Generators ---
-
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+        // --- NAVIGATION LOGIC ---
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            // Show target screen
+            document.getElementById(screenId).classList.add('active');
         }
 
-        // Generates easy solvable math (Levels 1-5)
+        function updateTimeLabel() {
+            timeLimitSeconds = timeSlider.value;
+            timeLabel.textContent = `${timeLimitSeconds} Seconds`;
+        }
+
+        // --- MATH GENERATORS ---
+
+        // Level 1-5: Solvable Math
         function generateEasyMath(wantTrue) {
-            const operations = ['+', '-', '*'];
-            const op = operations[getRandomInt(0, 2)];
-            let a = getRandomInt(1, 10);
-            let b = getRandomInt(1, 10);
-            let result;
-
-            if (op === '+') result = a + b;
-            if (op === '-') result = a - b;
-            if (op === '*') result = a * b;
-
-            // If we want a False statement, modify the result
-            let displayedResult = wantTrue ? result : result + getRandomInt(1, 3);
+            const a = Math.floor(Math.random() * 10) + 1;
+            const b = Math.floor(Math.random() * 10) + 1;
+            const ops = ['+', '-', '*'];
+            const op = ops[Math.floor(Math.random() * 3)];
             
-            // Occasionally for false, make sure we don't accidentally pick the right answer (rare edge case)
-            if (!wantTrue && displayedResult === result) displayedResult = result + 1;
+            let res;
+            if(op === '+') res = a + b;
+            if(op === '-') res = a - b;
+            if(op === '*') res = a * b;
 
-            return `${a} ${op} ${b} = ${displayedResult}`;
+            // Manipulate result if we want False
+            let displayRes = wantTrue ? res : res + (Math.floor(Math.random() * 3) + 1);
+            if (!wantTrue && displayRes === res) displayRes++; // fallback
+
+            return `${a} ${op} ${b} = ${displayRes}`;
         }
 
-        // Generates confusing/hard text (Levels 6+)
-        // Note: The math content doesn't need to be mathematically accurate to the truth value
-        // because the user relies on the "Fake Q Number" rule.
+        // Level 6+: THE IMPOSSIBLE LIST (25+ Types)
+        // Returns string. Logic relies on Odd/Even question number.
         function generateHardMath() {
-            const types = [
-                // Large Numbers
-                () => `${getRandomInt(10000, 99999)} × ${getRandomInt(11, 99)} = ${getRandomInt(100000, 9999999)}`,
-                () => `${getRandomInt(10000, 99999)} + ${getRandomInt(10000, 99999)} = ${getRandomInt(20000, 199999)}`,
-                // Calculus / Limits
-                () => `lim(x→∞) (1 + 1/x)^x = ${getRandomInt(1, 5) === 1 ? 'e' : getRandomInt(1, 10)}`,
-                () => `∫ e^x dx = e^x + ${getRandomInt(0, 1) === 0 ? 'C' : '0'}`,
-                () => `d/dx (sin x) = ${getRandomInt(0, 1) === 0 ? 'cos x' : '-cos x'}`,
-                // Theorems / Logic
-                () => `∑(n=1 to ∞) 1/n² = π²/${getRandomInt(5, 7)}`,
-                () => `e^(iπ) + 1 = ${getRandomInt(0, 1)}`,
-                () => `log₁₀(1000) = ${getRandomInt(2, 4)}`
-            ];
+            const bigA = Math.floor(Math.random() * 90000) + 10000;
+            const bigB = Math.floor(Math.random() * 90000) + 10000;
             
-            const randomType = types[getRandomInt(0, types.length - 1)];
-            return randomType();
+            const types = [
+                // 1. Calculus
+                () => `∫ x³ dx = ¼x⁴ + C`,
+                () => `lim(x→0) (sin x)/x = 1`,
+                () => `d/dx (ln x) = 1/x`,
+                () => `∫ e^x dx = e^x`,
+                () => `∂f/∂x = 2xy + z`,
+                // 2. Trigonometry
+                () => `cos(2θ) = cos²θ - sin²θ`,
+                () => `tan(45°) = 1`,
+                () => `csc(x) = 1/sin(x)`,
+                // 3. Logarithms
+                () => `ln(e) = 1`,
+                () => `log₂8 = 3`,
+                // 4. Linear Algebra
+                () => `det(I) = 1`,
+                () => `A × A⁻¹ = I`,
+                () => `|v| = √(x² + y² + z²)`,
+                () => `u · v = 0 (orthogonal)`,
+                // 5. Complex Numbers
+                () => `i² = -1`,
+                () => `|a + bi| = √(a² + b²)`,
+                // 6. Set Theory / Logic
+                () => `A ∪ A' = U`,
+                () => `A ∩ B ⊆ A`,
+                () => `(P → Q) ⇔ (¬Q → ¬P)`,
+                () => `∀x ∈ ℝ, x² ≥ 0`,
+                // 7. Series
+                () => `∑(1/n²) = π²/6`,
+                () => `1 + r + r²... = 1/(1-r)`,
+                // 8. Number Theory
+                () => `x ≡ 5 (mod 2)`,
+                () => `gcd(12, 18) = 6`,
+                // 9. Constants & Physics
+                () => `E = mc²`,
+                () => `F = G(m₁m₂)/r²`,
+                () => `PV = nRT`,
+                // 10. Scary Arithmetic
+                () => `${bigA} + ${bigB} = ?`,
+                () => `√${bigA} = ?`,
+                () => `${Math.floor(Math.random()*100)}!`
+            ];
+
+            const t = types[Math.floor(Math.random() * types.length)];
+            return t();
         }
 
-        // --- Core Logic ---
+        // --- GAMEPLAY LOGIC ---
 
         function startGame() {
-            startScreen.style.display = 'none';
-            loserScreen.style.display = 'none';
             currentLevel = 1;
             isGameActive = true;
+            showScreen('game-screen');
             nextQuestion();
-        }
-
-        function resetGame() {
-            loserScreen.style.display = 'none';
-            startScreen.style.display = 'flex';
         }
 
         function gameOver() {
             isGameActive = false;
-            clearInterval(timerInterval);
-            loserScreen.style.display = 'flex';
+            clearTimeout(timerInterval);
+            showScreen('loser-screen');
         }
 
         function startTimer() {
-            // Reset bar
+            // Reset visuals
             timerBar.style.transition = 'none';
             timerBar.style.width = '100%';
             
-            // Force reflow
+            // Reflow
             void timerBar.offsetWidth;
 
-            // Start animation
-            timerBar.style.transition = `width ${TIME_LIMIT_MS}ms linear`;
+            // Animate using the Definite Time Setting
+            timerBar.style.transition = `width ${timeLimitSeconds}s linear`;
             timerBar.style.width = '0%';
 
-            // Clear existing logic timer
-            clearInterval(timerInterval);
-
-            // Set new logic timer
+            clearTimeout(timerInterval);
             timerInterval = setTimeout(() => {
                 if(isGameActive) gameOver();
-            }, TIME_LIMIT_MS);
+            }, timeLimitSeconds * 1000);
         }
 
         function nextQuestion() {
@@ -313,49 +390,50 @@
 
             startTimer();
 
-            // 1. Decide if the correct answer is True or False
+            // 1. Determine Correct Answer
             const isTrue = Math.random() < 0.5;
             currentAnswer = isTrue;
 
-            // 2. Generate the Fake Question Number based on the Rule
-            // Rule: True = Even Number, False = Odd Number
-            let fakeQNum;
-            if (isTrue) {
-                // Generate Even
-                fakeQNum = getRandomInt(10, 500) * 2; 
-            } else {
-                // Generate Odd
-                fakeQNum = (getRandomInt(10, 500) * 2) + 1;
-            }
+            // 2. Fake Question Number Logic
+            // True = Even, False = Odd
+            const base = Math.floor(Math.random() * 400) + 10;
+            let fakeNum = isTrue ? (base * 2) : (base * 2 + 1);
 
-            qNumDisplay.textContent = `Q.${fakeQNum}`;
+            qNumDisplay.textContent = `Q.${fakeNum}`;
 
-            // 3. Generate the Text
+            // 3. Generate Question
             if (currentLevel <= 5) {
-                // Easy Mode: Math must match the truth value
+                // Easy mode: Text must match Truth
                 qTextDisplay.textContent = generateEasyMath(isTrue);
+                qTextDisplay.classList.remove('math-tiny');
             } else {
-                // Hard Mode: Just show scary math. 
-                // The math string itself doesn't matter, only the Q number rule matters.
-                qTextDisplay.textContent = generateHardMath();
+                // Hard mode: Text is random, only look at Q number
+                let text = generateHardMath();
+                qTextDisplay.textContent = text;
+                
+                // If text is super long, shrink font
+                if(text.length > 20) {
+                    qTextDisplay.classList.add('math-tiny');
+                } else {
+                    qTextDisplay.classList.remove('math-tiny');
+                }
             }
 
             currentLevel++;
         }
 
-        function handleInput(playerChoseTrue) {
-            if (!isGameActive) return;
+        function handleInput(playerChoice) {
+            if(!isGameActive) return;
 
-            if (playerChoseTrue === currentAnswer) {
+            if(playerChoice === currentAnswer) {
                 // Correct
-                clearInterval(timerInterval); // Stop timer for a split second
+                clearTimeout(timerInterval); // Brief pause logic
                 nextQuestion();
             } else {
                 // Wrong
                 gameOver();
             }
         }
-
     </script>
 </body>
 </html>
