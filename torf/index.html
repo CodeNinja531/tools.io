@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Math Game - 50 Variations</title>
+    <title>The Math Game - Competitive Speed</title>
     <style>
         :root {
             --primary: #2c3e50;
-            --accent: #8e44ad; /* Changed to Purple for Hard Mode vibe */
+            --accent: #8e44ad;
             --green: #27ae60;
             --red: #c0392b;
             --bg: #ecf0f1;
@@ -41,68 +41,92 @@
             z-index: 10;
         }
 
-        .screen.active {
-            display: flex;
-        }
+        .screen.active { display: flex; }
 
         /* --- START SCREEN --- */
         #start-screen h1 {
             font-size: 4rem;
             color: var(--primary);
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #player-name {
+            padding: 15px;
+            font-size: 1.5rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 250px;
             text-align: center;
         }
 
         .menu-btn {
-            width: 220px;
-            padding: 18px;
-            margin: 12px;
-            font-size: 1.3rem;
+            width: 250px;
+            padding: 15px;
+            margin: 10px;
+            font-size: 1.2rem;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             transition: transform 0.1s;
+            text-transform: uppercase;
         }
 
         .btn-start { background-color: var(--accent); color: white; }
-        .btn-options { background-color: #7f8c8d; color: white; }
+        .btn-secondary { background-color: #7f8c8d; color: white; }
+        .btn-gold { background-color: #f1c40f; color: #2c3e50; }
         .menu-btn:active { transform: scale(0.95); }
 
-        /* --- OPTIONS SCREEN --- */
-        .option-group {
-            text-align: center;
-            margin-bottom: 30px;
-            width: 80%;
-            max-width: 400px;
+        /* --- LEADERBOARD SCREEN --- */
+        #leaderboard-list {
+            width: 90%;
+            max-width: 600px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #fff;
         }
 
-        label {
-            font-size: 1.5rem;
-            color: var(--primary);
-            display: block;
-            margin-bottom: 15px;
-        }
-
-        input[type=range] {
-            width: 100%;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-
-        .value-display {
-            font-size: 2rem;
+        .lb-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
             font-weight: bold;
-            color: var(--accent);
+            font-size: 1.1rem;
         }
+
+        .lb-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        
+        /* Columns */
+        .col-rank { width: 10%; }
+        .col-name { width: 40%; text-align: left; }
+        .col-score { width: 20%; text-align: center; font-weight: bold; }
+        .col-time { width: 30%; text-align: right; color: #7f8c8d; font-family: monospace; }
+
+        .lb-entry:nth-child(even) { background-color: #f9f9f9; }
+        /* Gold highlighting for top rank handled in JS logic or CSS specific selection */
+        .lb-entry.gold { background-color: #f1c40f; color: #000; } 
+        .lb-entry.gold .col-time { color: #333; }
 
         /* --- GAME UI --- */
-        #game-screen {
-            background-color: #fff;
-        }
-
         #timer-container {
             position: absolute;
             top: 0;
@@ -162,80 +186,93 @@
             cursor: pointer;
             color: white;
             text-transform: uppercase;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
-            transition: all 0.1s;
         }
-
-        .game-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
-        }
-
         #btn-true { background-color: var(--green); }
         #btn-false { background-color: var(--red); }
 
         /* --- LOSER SCREEN --- */
-        #loser-screen {
-            background-color: black;
-            z-index: 50;
-        }
-
+        #loser-screen { background-color: black; }
         #loser-text {
             color: #ff0000;
             font-size: 8rem;
             font-weight: 900;
             font-family: Impact, sans-serif;
-            letter-spacing: 5px;
             text-shadow: 0 0 20px darkred;
-            margin-bottom: 40px;
+            margin-bottom: 10px;
             animation: shake 0.5s;
         }
-
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        .stats-box {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
         }
+        .stats-main { font-size: 3rem; font-weight: bold; margin-bottom: 10px; }
+        .stats-sub { font-size: 1.5rem; color: #aaa; }
 
+        /* --- OPTIONS --- */
+        .option-group { text-align: center; margin-bottom: 30px; width: 80%; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        
         .math-tiny { font-size: 2rem !important; }
         .math-micro { font-size: 1.5rem !important; }
 
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
     </style>
 </head>
 <body>
 
     <div id="start-screen" class="screen active">
         <h1>THE MATH GAME</h1>
+        
+        <div class="input-group">
+            <input type="text" id="player-name" placeholder="Enter Your Name" maxlength="15">
+        </div>
+
         <button class="menu-btn btn-start" onclick="startGame()">START GAME</button>
-        <button class="menu-btn btn-options" onclick="showScreen('options-screen')">OPTIONS</button>
+        <button class="menu-btn btn-gold" onclick="openLeaderboard()">LEADERBOARD</button>
+        <button class="menu-btn btn-secondary" onclick="showScreen('options-screen')">OPTIONS</button>
+        <div id="file-status" style="margin-top:10px; color:#7f8c8d; font-size:0.9rem;"></div>
     </div>
 
     <div id="options-screen" class="screen">
         <h1>OPTIONS</h1>
         <div class="option-group">
-            <label for="time-slider">Time Limit per Question</label>
+            <label style="font-size:1.5rem; color:var(--primary);">Time Limit</label>
             <input type="range" id="time-slider" min="2" max="10" value="5" step="1" oninput="updateTimeLabel()">
-            <div id="time-label" class="value-display">5 Seconds</div>
+            <div id="time-label" style="font-size:2rem; font-weight:bold; color:var(--accent);">5 Seconds</div>
         </div>
-        <button class="menu-btn btn-options" onclick="showScreen('start-screen')">BACK</button>
+        <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">BACK</button>
+    </div>
+
+    <div id="leaderboard-screen" class="screen">
+        <h1>HALL OF FAME</h1>
+        
+        <div id="leaderboard-list">
+            <div class="lb-header">
+                <span class="col-rank">#</span>
+                <span class="col-name">Name</span>
+                <span class="col-score">Score</span>
+                <span class="col-time">Avg Time</span>
+            </div>
+            <div id="lb-content">
+                </div>
+        </div>
+
+        <button id="copy-btn" class="menu-btn btn-start" onclick="copyLeaderboardData()">COPY DATA</button>
+        <p style="font-size:0.8rem; color:#888; text-align:center; max-width:400px;">
+            Copy this data and paste it into <strong>/leaderboard.txt</strong> to save it permanently.
+        </p>
+        <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">BACK</button>
     </div>
 
     <div id="game-screen" class="screen">
-        <div id="timer-container">
-            <div id="timer-bar"></div>
-        </div>
-        
+        <div id="timer-container"><div id="timer-bar"></div></div>
         <div id="q-number-display">Q.1</div>
         <div id="question-text">Ready?</div>
-
         <div class="btn-container">
             <button id="btn-true" class="game-btn" onclick="handleInput(true)">True</button>
             <button id="btn-false" class="game-btn" onclick="handleInput(false)">False</button>
@@ -244,25 +281,57 @@
 
     <div id="loser-screen" class="screen">
         <div id="loser-text">LOSER</div>
-        <button class="menu-btn btn-options" style="border: 2px solid red; background:transparent; color:red;" onclick="showScreen('start-screen')">MAIN MENU</button>
+        <div class="stats-box">
+            <div id="final-score" class="stats-main">Score: 0</div>
+            <div id="final-time" class="stats-sub">Avg Time: 0.000s</div>
+        </div>
+        <button class="menu-btn btn-secondary" style="border:2px solid red; background:transparent; color:red;" onclick="showScreen('start-screen')">MAIN MENU</button>
     </div>
 
     <script>
-        // --- GLOBAL SETTINGS ---
+        // --- DATA & STATE ---
+        let leaderboardData = []; 
         let timeLimitSeconds = 5; 
         let currentLevel = 1;
         let isGameActive = false;
         let timerInterval;
         let currentAnswer = true;
-        
-        // --- DOM ELEMENTS ---
-        const timerBar = document.getElementById('timer-bar');
-        const qNumDisplay = document.getElementById('q-number-display');
-        const qTextDisplay = document.getElementById('question-text');
+        let currentPlayerName = "Anonymous";
+
+        // Statistics Variables
+        let questionStartTime = 0;
+        let totalReactionTime = 0; // Cumulative time in seconds
+
+        // --- DOM ---
         const timeSlider = document.getElementById('time-slider');
         const timeLabel = document.getElementById('time-label');
+        const qNumDisplay = document.getElementById('q-number-display');
+        const qTextDisplay = document.getElementById('question-text');
+        const timerBar = document.getElementById('timer-bar');
+        const nameInput = document.getElementById('player-name');
+        const lbContent = document.getElementById('lb-content');
+        const fileStatus = document.getElementById('file-status');
 
-        // --- UTILS ---
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            fetchLeaderboard();
+        };
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch('leaderboard.txt');
+                if (!response.ok) throw new Error("File not found");
+                const text = await response.text();
+                leaderboardData = text.trim() ? JSON.parse(text) : [];
+                fileStatus.textContent = "Leaderboard loaded successfully.";
+            } catch (error) {
+                console.warn("Could not load leaderboard.txt", error);
+                fileStatus.textContent = "No leaderboard.txt found. Starting fresh.";
+                leaderboardData = [];
+            }
+        }
+
+        // --- NAVIGATION ---
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -273,13 +342,94 @@
             timeLabel.textContent = `${timeLimitSeconds} Seconds`;
         }
 
-        function rand(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+        // --- LEADERBOARD LOGIC ---
+
+        function openLeaderboard() {
+            renderLeaderboard();
+            showScreen('leaderboard-screen');
+        }
+
+        function renderLeaderboard() {
+            lbContent.innerHTML = "";
+            
+            // Sort: 1. Higher Score wins. 2. If Score tied, Lower Time wins.
+            leaderboardData.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                } else {
+                    // Lower time is better
+                    return (a.time || 999) - (b.time || 999);
+                }
+            });
+
+            if (leaderboardData.length === 0) {
+                lbContent.innerHTML = "<div class='lb-entry' style='justify-content:center'>No records yet.</div>";
+                return;
+            }
+
+            leaderboardData.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'lb-entry';
+                if(index === 0) div.classList.add('gold');
+
+                // Fallback for old data without time
+                const timeDisplay = entry.time ? parseFloat(entry.time).toFixed(3) + 's' : '---';
+
+                div.innerHTML = `
+                    <span class="col-rank">${index + 1}</span>
+                    <span class="col-name">${entry.name}</span>
+                    <span class="col-score">${entry.score}</span>
+                    <span class="col-time">${timeDisplay}</span>
+                `;
+                lbContent.appendChild(div);
+            });
+        }
+
+        function updateLeaderboard(score, avgTime) {
+            if (!currentPlayerName) currentPlayerName = "Anonymous";
+            
+            const existingUser = leaderboardData.find(u => u.name === currentPlayerName);
+            
+            if (existingUser) {
+                // Logic: High Score is King. If Score improves, update.
+                // If Score ties, update only if Time improves (is lower).
+                const oldScore = existingUser.score;
+                const oldTime = existingUser.time || 9999;
+
+                if (score > oldScore) {
+                    existingUser.score = score;
+                    existingUser.time = avgTime;
+                } else if (score === oldScore && avgTime < oldTime) {
+                    existingUser.time = avgTime;
+                }
+            } else {
+                leaderboardData.push({ name: currentPlayerName, score: score, time: avgTime });
+            }
+
+            // Cleanup: Top 50 only
+            leaderboardData.sort((a, b) => b.score - a.score);
+            if(leaderboardData.length > 50) leaderboardData.pop();
+        }
+
+        function copyLeaderboardData() {
+            const dataStr = JSON.stringify(leaderboardData);
+            navigator.clipboard.writeText(dataStr).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = "COPIED!";
+                btn.style.backgroundColor = "#27ae60";
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = "";
+                }, 2000);
+            }).catch(err => {
+                alert("Failed to copy. Please allow clipboard permissions.");
+            });
         }
 
         // --- MATH GENERATORS ---
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-        // Level 1-5: Easy
         function generateEasyMath(wantTrue) {
             const a = rand(2, 9);
             const b = rand(2, 9);
@@ -289,18 +439,13 @@
             if(op === '+') res = a + b;
             if(op === '-') res = a - b;
             if(op === '*') res = a * b;
-
             let displayRes = wantTrue ? res : res + rand(1, 3);
             if (!wantTrue && displayRes === res) displayRes++; 
-
             return `${a} ${op} ${b} = ${displayRes}`;
         }
 
-        // Level 6+: 50 Types of Hard Math
         function generateHardMath(wantTrue) {
-            const type = rand(0, 49); // 50 types (0 to 49)
-            
-            // Helper vars for generating random numbers in questions
+            const type = rand(0, 49);
             const n = rand(2, 9);
             const k = rand(2, 12);
             const bigA = rand(100, 999);
@@ -308,136 +453,75 @@
             const bigC = rand(50, 200);
 
             switch(type) {
-                // --- 1. Basic Arithmetic (Big/Complex) ---
-                case 0: // Big Addition
-                    return wantTrue ? `${bigA} + ${bigB} = ${bigA+bigB}` : `${bigA} + ${bigB} = ${bigA+bigB+10}`;
-                case 1: // Big Subtraction
-                    return wantTrue ? `${bigA} - ${bigC} = ${bigA-bigC}` : `${bigA} - ${bigC} = ${bigA-bigC-5}`;
-                case 2: // Big Multiplication (Estimates)
-                    return wantTrue ? `100 × ${k} = ${100*k}` : `100 × ${k} = ${100*k + 50}`;
-                case 3: // Mixed Operations
-                    let ans3 = bigC + (n * k);
-                    return wantTrue ? `${bigC} + ${n}×${k} = ${ans3}` : `${bigC} + ${n}×${k} = ${ans3-1}`;
-                case 4: // Division
-                    return wantTrue ? `${n*k} ÷ ${n} = ${k}` : `${n*k} ÷ ${n} = ${k+1}`;
-            
-                // --- 2. Calculus: Derivatives ---
-                case 5: // Power Rule
-                    return wantTrue ? `d/dx(x^${n}) = ${n}x^${n-1}` : `d/dx(x^${n}) = x^${n+1}`;
-                case 6: // Sin
-                    return wantTrue ? `d/dx(sin x) = cos x` : `d/dx(sin x) = -sin x`;
-                case 7: // Cos
-                    return wantTrue ? `d/dx(cos x) = -sin x` : `d/dx(cos x) = sin x`;
-                case 8: // e^kx
-                    return wantTrue ? `d/dx(e^${n}x) = ${n}e^${n}x` : `d/dx(e^${n}x) = e^${n}x`;
-                case 9: // ln x
-                    return wantTrue ? `d/dx(ln x) = 1/x` : `d/dx(ln x) = e^x`;
-                case 10: // Constant
-                    return wantTrue ? `d/dx(${bigA}) = 0` : `d/dx(${bigA}) = ${bigA}`;
-                case 11: // Tan
-                    return wantTrue ? `d/dx(tan x) = sec²x` : `d/dx(tan x) = cot x`;
-                case 12: // 1/x
-                    return wantTrue ? `d/dx(x⁻¹) = -x⁻²` : `d/dx(x⁻¹) = ln x`;
-
-                // --- 3. Calculus: Integrals ---
-                case 13: // Power Rule Int
-                    return wantTrue ? `∫ x^${n} dx = x^${n+1}/${n+1}` : `∫ x^${n} dx = ${n}x^${n-1}`;
-                case 14: // e^x Int
-                    return wantTrue ? `∫ e^x dx = e^x + C` : `∫ e^x dx = ln x + C`;
-                case 15: // 1/x Int
-                    return wantTrue ? `∫ (1/x) dx = ln|x|` : `∫ (1/x) dx = -1/x²`;
-                case 16: // Definite Integral Simple
-                    return wantTrue ? `∫₀¹ 1 dx = 1` : `∫₀¹ 1 dx = 0`;
-                case 17: // Sin Int
-                    return wantTrue ? `∫ sin x dx = -cos x` : `∫ sin x dx = cos x`;
-
-                // --- 4. Calculus: Limits ---
-                case 18: // 1/x -> inf
-                    return wantTrue ? `lim(x→∞) 1/x = 0` : `lim(x→∞) 1/x = ∞`;
-                case 19: // sin x / x
-                    return wantTrue ? `lim(x→0) (sin x)/x = 1` : `lim(x→0) (sin x)/x = 0`;
-                case 20: // const
-                    return wantTrue ? `lim(x→∞) ${n} = ${n}` : `lim(x→∞) ${n} = 0`;
-
-                // --- 5. Linear Algebra ---
-                case 21: // Det Identity
-                    return wantTrue ? `det(I) = 1` : `det(I) = 0`;
-                case 22: // Dot Product Orthogonal
-                    return wantTrue ? `i · j = 0` : `i · j = 1`;
-                case 23: // Cross Product
-                    return wantTrue ? `i × j = k` : `i × j = -k`;
-                case 24: // Transpose
-                    return wantTrue ? `(Aᵀ)ᵀ = A` : `(Aᵀ)ᵀ = A⁻¹`;
-                case 25: // Inverse
-                    return wantTrue ? `A · A⁻¹ = I` : `A · A⁻¹ = 0`;
-                case 26: // Singular Matrix
-                    return wantTrue ? `det(0) = 0` : `det(0) = 1`;
-
-                // --- 6. Complex Numbers ---
-                case 27: // i^2
-                    return wantTrue ? `i² = -1` : `i² = 1`;
-                case 28: // Modulus
-                    return wantTrue ? `|${n}i| = ${n}` : `|${n}i| = -${n}`;
-                case 29: // Euler
-                    return wantTrue ? `e^(iπ) = -1` : `e^(iπ) = 1`;
-                case 30: // Conjugate
-                    return wantTrue ? `conj(a+bi) = a-bi` : `conj(a+bi) = -a+bi`;
-
-                // --- 7. Trigonometry ---
-                case 31: // Identity
-                    return wantTrue ? `sin²x + cos²x = 1` : `sin²x + cos²x = tan x`;
-                case 32: // Tan definition
-                    return wantTrue ? `tan x = sin x / cos x` : `tan x = cos x / sin x`;
-                case 33: // Sec
-                    return wantTrue ? `sec x = 1/cos x` : `sec x = 1/sin x`;
-                case 34: // Csc
-                    return wantTrue ? `csc x = 1/sin x` : `csc x = 1/cos x`;
-                case 35: // Values
-                    return wantTrue ? `sin(0) = 0` : `sin(0) = 1`;
-                case 36: // Values
-                    return wantTrue ? `cos(0) = 1` : `cos(0) = 0`;
-
-                // --- 8. Logarithms ---
-                case 37: // log(ab)
-                    return wantTrue ? `log(ab) = log a + log b` : `log(ab) = log a × log b`;
-                case 38: // log(a/b)
-                    return wantTrue ? `log(a/b) = log a - log b` : `log(a/b) = log a / log b`;
-                case 39: // power rule
-                    return wantTrue ? `log(x^${n}) = ${n}log(x)` : `log(x^${n}) = log(x)/${n}`;
-                case 40: // ln e
-                    return wantTrue ? `ln(e) = 1` : `ln(e) = 0`;
-                case 41: // log 1
-                    return wantTrue ? `log(1) = 0` : `log(1) = 1`;
-
-                // --- 9. Logic / Sets ---
-                case 42: // Union self
-                    return wantTrue ? `A ∪ A = A` : `A ∪ A = ∅`;
-                case 43: // Intersection self
-                    return wantTrue ? `A ∩ A = A` : `A ∩ A = U`;
-                case 44: // Empty set
-                    return wantTrue ? `A ∩ ∅ = ∅` : `A ∩ ∅ = A`;
-                case 45: // Compliment
-                    return wantTrue ? `(A')' = A` : `(A')' = ∅`;
-
-                // --- 10. Number Theory / Algebra ---
-                case 46: // Factorial
-                    return wantTrue ? `3! = 6` : `3! = 9`;
-                case 47: // Exponent 0
-                    return wantTrue ? `${bigA}⁰ = 1` : `${bigA}⁰ = 0`;
-                case 48: // Roots
-                    return wantTrue ? `√(${n*n}) = ${n}` : `√(${n*n}) = ${n+1}`;
-                case 49: // Powers
-                    return wantTrue ? `x^a · x^b = x^(a+b)` : `x^a · x^b = x^(ab)`;
-
+                case 0: return wantTrue ? `${bigA} + ${bigB} = ${bigA+bigB}` : `${bigA} + ${bigB} = ${bigA+bigB+10}`;
+                case 1: return wantTrue ? `${bigA} - ${bigC} = ${bigA-bigC}` : `${bigA} - ${bigC} = ${bigA-bigC-5}`;
+                case 2: return wantTrue ? `100 × ${k} = ${100*k}` : `100 × ${k} = ${100*k + 50}`;
+                case 3: let ans3 = bigC + (n * k); return wantTrue ? `${bigC} + ${n}×${k} = ${ans3}` : `${bigC} + ${n}×${k} = ${ans3-1}`;
+                case 4: return wantTrue ? `${n*k} ÷ ${n} = ${k}` : `${n*k} ÷ ${n} = ${k+1}`;
+                case 5: return wantTrue ? `d/dx(x^${n}) = ${n}x^${n-1}` : `d/dx(x^${n}) = x^${n+1}`;
+                case 6: return wantTrue ? `d/dx(sin x) = cos x` : `d/dx(sin x) = -sin x`;
+                case 7: return wantTrue ? `d/dx(cos x) = -sin x` : `d/dx(cos x) = sin x`;
+                case 8: return wantTrue ? `d/dx(e^${n}x) = ${n}e^${n}x` : `d/dx(e^${n}x) = e^${n}x`;
+                case 9: return wantTrue ? `d/dx(ln x) = 1/x` : `d/dx(ln x) = e^x`;
+                case 10: return wantTrue ? `d/dx(${bigA}) = 0` : `d/dx(${bigA}) = ${bigA}`;
+                case 11: return wantTrue ? `d/dx(tan x) = sec²x` : `d/dx(tan x) = cot x`;
+                case 12: return wantTrue ? `d/dx(x⁻¹) = -x⁻²` : `d/dx(x⁻¹) = ln x`;
+                case 13: return wantTrue ? `∫ x^${n} dx = x^${n+1}/${n+1}` : `∫ x^${n} dx = ${n}x^${n-1}`;
+                case 14: return wantTrue ? `∫ e^x dx = e^x + C` : `∫ e^x dx = ln x + C`;
+                case 15: return wantTrue ? `∫ (1/x) dx = ln|x|` : `∫ (1/x) dx = -1/x²`;
+                case 16: return wantTrue ? `∫₀¹ 1 dx = 1` : `∫₀¹ 1 dx = 0`;
+                case 17: return wantTrue ? `∫ sin x dx = -cos x` : `∫ sin x dx = cos x`;
+                case 18: return wantTrue ? `lim(x→∞) 1/x = 0` : `lim(x→∞) 1/x = ∞`;
+                case 19: return wantTrue ? `lim(x→0) (sin x)/x = 1` : `lim(x→0) (sin x)/x = 0`;
+                case 20: return wantTrue ? `lim(x→∞) ${n} = ${n}` : `lim(x→∞) ${n} = 0`;
+                case 21: return wantTrue ? `det(I) = 1` : `det(I) = 0`;
+                case 22: return wantTrue ? `i · j = 0` : `i · j = 1`;
+                case 23: return wantTrue ? `i × j = k` : `i × j = -k`;
+                case 24: return wantTrue ? `(Aᵀ)ᵀ = A` : `(Aᵀ)ᵀ = A⁻¹`;
+                case 25: return wantTrue ? `A · A⁻¹ = I` : `A · A⁻¹ = 0`;
+                case 26: return wantTrue ? `det(0) = 0` : `det(0) = 1`;
+                case 27: return wantTrue ? `i² = -1` : `i² = 1`;
+                case 28: return wantTrue ? `|${n}i| = ${n}` : `|${n}i| = -${n}`;
+                case 29: return wantTrue ? `e^(iπ) = -1` : `e^(iπ) = 1`;
+                case 30: return wantTrue ? `conj(a+bi) = a-bi` : `conj(a+bi) = -a+bi`;
+                case 31: return wantTrue ? `sin²x + cos²x = 1` : `sin²x + cos²x = tan x`;
+                case 32: return wantTrue ? `tan x = sin x / cos x` : `tan x = cos x / sin x`;
+                case 33: return wantTrue ? `sec x = 1/cos x` : `sec x = 1/sin x`;
+                case 34: return wantTrue ? `csc x = 1/sin x` : `csc x = 1/cos x`;
+                case 35: return wantTrue ? `sin(0) = 0` : `sin(0) = 1`;
+                case 36: return wantTrue ? `cos(0) = 1` : `cos(0) = 0`;
+                case 37: return wantTrue ? `log(ab) = log a + log b` : `log(ab) = log a × log b`;
+                case 38: return wantTrue ? `log(a/b) = log a - log b` : `log(a/b) = log a / log b`;
+                case 39: return wantTrue ? `log(x^${n}) = ${n}log(x)` : `log(x^${n}) = log(x)/${n}`;
+                case 40: return wantTrue ? `ln(e) = 1` : `ln(e) = 0`;
+                case 41: return wantTrue ? `log(1) = 0` : `log(1) = 1`;
+                case 42: return wantTrue ? `A ∪ A = A` : `A ∪ A = ∅`;
+                case 43: return wantTrue ? `A ∩ A = A` : `A ∩ A = U`;
+                case 44: return wantTrue ? `A ∩ ∅ = ∅` : `A ∩ ∅ = A`;
+                case 45: return wantTrue ? `(A')' = A` : `(A')' = ∅`;
+                case 46: return wantTrue ? `3! = 6` : `3! = 9`;
+                case 47: return wantTrue ? `${bigA}⁰ = 1` : `${bigA}⁰ = 0`;
+                case 48: return wantTrue ? `√(${n*n}) = ${n}` : `√(${n*n}) = ${n+1}`;
+                case 49: return wantTrue ? `x^a · x^b = x^(a+b)` : `x^a · x^b = x^(ab)`;
                 default: return `1 + 1 = 2`;
             }
         }
 
-        // --- GAMEPLAY LOGIC ---
+        // --- GAMEPLAY ENGINE ---
 
         function startGame() {
+            const inputName = nameInput.value.trim();
+            if(!inputName) {
+                alert("Please enter a name to play!");
+                return;
+            }
+            currentPlayerName = inputName;
+            
+            // Reset Game Stats
             currentLevel = 1;
+            totalReactionTime = 0;
             isGameActive = true;
+            
             showScreen('game-screen');
             nextQuestion();
         }
@@ -445,7 +529,17 @@
         function gameOver() {
             isGameActive = false;
             clearTimeout(timerInterval);
+            
+            // Stats Calculation
+            let finalScore = currentLevel - 1;
+            let avgTime = finalScore > 0 ? (totalReactionTime / finalScore) : 0;
+            
+            // UI Update
+            document.getElementById('final-score').textContent = `Score: ${finalScore}`;
+            document.getElementById('final-time').textContent = `Avg Time: ${avgTime.toFixed(3)}s`;
+            
             showScreen('loser-screen');
+            updateLeaderboard(finalScore, avgTime);
         }
 
         function startTimer() {
@@ -465,33 +559,28 @@
         function nextQuestion() {
             if (!isGameActive) return;
 
+            // Start Timing
             startTimer();
+            questionStartTime = performance.now(); // Start exact stopwatch
 
-            // 1. Determine Truth
             const isTrue = Math.random() < 0.5;
             currentAnswer = isTrue;
 
-            // 2. Secret Rule (True=Even, False=Odd)
+            // Rule: True=Even, False=Odd
             const base = rand(10, 400);
             let fakeNum = isTrue ? (base * 2) : (base * 2 + 1);
             qNumDisplay.textContent = `Q.${fakeNum}`;
 
-            // 3. Generate Content
             if (currentLevel <= 5) {
-                // Easy
                 qTextDisplay.textContent = generateEasyMath(isTrue);
                 qTextDisplay.classList.remove('math-tiny', 'math-micro');
             } else {
-                // Hard (50 variations)
                 let text = generateHardMath(isTrue);
                 qTextDisplay.textContent = text;
-                
-                // Adjust font for long text
                 qTextDisplay.classList.remove('math-tiny', 'math-micro');
                 if(text.length > 25) qTextDisplay.classList.add('math-tiny');
                 if(text.length > 35) qTextDisplay.classList.add('math-micro');
             }
-
             currentLevel++;
         }
 
@@ -499,9 +588,15 @@
             if(!isGameActive) return;
 
             if(playerChoice === currentAnswer) {
+                // Correct Answer
+                let endTime = performance.now();
+                let durationSeconds = (endTime - questionStartTime) / 1000;
+                totalReactionTime += durationSeconds;
+                
                 clearTimeout(timerInterval);
                 nextQuestion();
             } else {
+                // Wrong Answer
                 gameOver();
             }
         }
