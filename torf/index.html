@@ -500,7 +500,7 @@
                 case 13: return wantTrue ? `∫ x^${n} dx = x^${n+1}/${n+1} + C` : `∫ x^${n} dx = ${n}x^${n-1} + C`;
                 case 14: return wantTrue ? `∫ e^x dx = e^x + C` : `∫ e^x dx = ln x + C`;
                 case 15: return wantTrue ? `∫ (1/x) dx = ln|x| + C` : `∫ (1/x) dx = -1/x² + C`;
-                case 16: return wantTrue ? `∫₀¹ 1 dx = 1` : `∫₀¹ 1 dx = 0`; // Definite integral, no C
+                case 16: return wantTrue ? `∫₀¹ 1 dx = 1` : `∫₀¹ 1 dx = 0`; 
                 case 17: return wantTrue ? `∫ sin x dx = -cos x + C` : `∫ sin x dx = cos x + C`;
                 
                 case 18: return wantTrue ? `lim(x→∞) 1/x = 0` : `lim(x→∞) 1/x = ∞`;
@@ -688,11 +688,12 @@
                     return wantTrue ? `${bin}₂ = ${num}` : `${bin}₂ = ${num + 1}`;
                 }
 
-                // Hex Equality
+                // Hex Equality (Correct subscript)
                 case 67: {
                     let num = rand(10, 255);
-                    let hex = "0x" + num.toString(16).toUpperCase();
-                    return wantTrue ? `${hex} = ${num}` : `${hex} = ${num + rand(1,10)}`;
+                    let hex = num.toString(16).toUpperCase();
+                    let displayHex = `${hex}<sub>16</sub>`;
+                    return wantTrue ? `${displayHex} = ${num}` : `${displayHex} = ${num + rand(1,10)}`;
                 }
 
                 // Binary Comparison >
@@ -703,12 +704,13 @@
                     return `${bin}₂ > ${target}`;
                 }
 
-                // Hex Comparison >
+                // Hex Comparison > (Correct subscript)
                 case 69: {
                     let num = rand(16, 50);
-                    let hex = "0x" + num.toString(16).toUpperCase();
+                    let hex = num.toString(16).toUpperCase();
+                    let displayHex = `${hex}<sub>16</sub>`;
                     let target = wantTrue ? num - 2 : num + 2;
-                    return `${hex} > ${target}`;
+                    return `${displayHex} > ${target}`;
                 }
 
                 // Binary Math Addition
