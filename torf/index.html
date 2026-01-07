@@ -88,7 +88,7 @@
         .btn-start { background-color: var(--accent); }
         .btn-secondary { background-color: #95a5a6; }
         
-        /* New Beautiful Blue Button */
+        /* Beautiful Blue Button */
         .btn-blue { 
             background-color: var(--blue);
             box-shadow: 0 4px 0 var(--blue-dark);
@@ -100,7 +100,7 @@
         #leaderboard-list {
             width: 90%;
             max-width: 600px;
-            height: 450px; /* Fixed height for consistency */
+            height: 450px;
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -323,7 +323,7 @@
         let isGameActive = false;
         let timerInterval;
         let currentAnswer = true;
-        let currentPlayerName = "Anonymous";
+        let currentPlayerName = "";
 
         let questionStartTime = 0;
         let totalReactionTime = 0; 
@@ -407,7 +407,8 @@
         }
 
         function updateLeaderboard(score, avgTime) {
-            if (!currentPlayerName) currentPlayerName = "Anonymous";
+            // ** LOGIC CHANGE **: If no name was entered, STOP here. Do not save.
+            if (!currentPlayerName || currentPlayerName.trim() === "") return;
             
             const existingUser = leaderboardData.find(u => u.name === currentPlayerName);
             
@@ -530,12 +531,8 @@
         // --- GAMEPLAY ENGINE ---
 
         function startGame() {
-            const inputName = nameInput.value.trim();
-            if(!inputName) {
-                alert("Please enter a name to play!");
-                return;
-            }
-            currentPlayerName = inputName;
+            // ** LOGIC CHANGE **: removed alert(). Just take the value.
+            currentPlayerName = nameInput.value.trim();
             
             // Reset Game Stats
             currentLevel = 1;
