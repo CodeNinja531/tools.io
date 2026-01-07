@@ -1,1 +1,1 @@
-[{"name":"FC","score":31,"time":1.7617419354838709},{"name":"hacker","score":69420,"time":0.000}]
+[{"name":"FC","score":31,"time":1.7617419354838709},{"name":"hacker","score":69420,"time":0.001}]
