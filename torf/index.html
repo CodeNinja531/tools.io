@@ -3,13 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Math Game</title>
+    <title>The Math Game - Competitive Speed</title>
     <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #8e44ad;
+            --blue: #3498db; 
+            --blue-dark: #2980b9;
+            --green: #27ae60;
+            --red: #c0392b;
+            --bg: #ecf0f1;
+        }
+
         body {
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f0f0;
+            background-color: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,64 +28,183 @@
             user-select: none;
         }
 
-        /* --- Game Container --- */
-        #game-container {
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            position: relative;
-            background-color: white;
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            background-color: white;
+            z-index: 10;
         }
 
-        /* --- Timer Bar --- */
+        .screen.active { display: flex; }
+
+        /* --- START SCREEN --- */
+        #start-screen h1 {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #player-name {
+            padding: 15px;
+            font-size: 1.5rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 250px;
+            text-align: center;
+        }
+
+        .menu-btn {
+            width: 250px;
+            padding: 15px;
+            margin: 10px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, background-color 0.2s;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .menu-btn:active { transform: scale(0.95); }
+
+        /* Button Colors */
+        .btn-start { background-color: var(--accent); }
+        .btn-secondary { background-color: #95a5a6; }
+        
+        /* Beautiful Blue Button */
+        .btn-blue { 
+            background-color: var(--blue);
+            box-shadow: 0 4px 0 var(--blue-dark);
+        }
+        .btn-blue:hover { background-color: var(--blue-dark); }
+        .btn-blue:active { box-shadow: 0 2px 0 var(--blue-dark); transform: translateY(2px); }
+
+        /* --- LEADERBOARD SCREEN --- */
+        #leaderboard-list {
+            width: 90%;
+            max-width: 600px;
+            height: 450px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Copy Button - Top Right Corner */
+        #copy-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            background-color: #bdc3c7;
+            color: var(--primary);
+            border-radius: 20px;
+            box-shadow: none;
+            border: 1px solid #ccc;
+        }
+        #copy-btn:hover { background-color: #ecf0f1; }
+
+        .lb-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .lb-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        
+        .col-rank { width: 10%; }
+        .col-name { width: 40%; text-align: left; }
+        .col-score { width: 20%; text-align: center; font-weight: bold; }
+        .col-time { width: 30%; text-align: right; color: #7f8c8d; font-family: monospace; }
+
+        .lb-entry:nth-child(even) { background-color: #f9f9f9; }
+        .lb-entry.gold { background-color: #f1c40f; color: #000; } 
+        .lb-entry.gold .col-time { color: #333; }
+
+        /* --- GAME UI --- */
         #timer-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 20px;
+            height: 25px;
             background-color: #ddd;
         }
 
         #timer-bar {
             height: 100%;
             width: 100%;
-            background-color: #ff9800; /* Orange/Warning color */
-            transition: width linear;
+            background: linear-gradient(90deg, #8e44ad, #2980b9);
         }
 
-        /* --- Question Number (The Trick) --- */
         #q-number-display {
             position: absolute;
-            top: 30px;
+            top: 40px;
             left: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 800;
             color: #555;
             background: #eee;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent);
         }
 
-        /* --- Main Question Text --- */
         #question-text {
             font-size: 3rem;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
             padding: 0 20px;
-            color: #333;
+            color: #222;
+            font-family: 'Times New Roman', Times, serif; 
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* --- Button Area --- */
         .btn-container {
             display: flex;
             gap: 20px;
-            width: 80%;
-            height: 200px;
+            width: 90%;
+            max-width: 600px;
+            height: 180px;
         }
 
         .game-btn {
@@ -85,277 +214,610 @@
             border: none;
             border-radius: 15px;
             cursor: pointer;
-            transition: transform 0.1s;
             color: white;
             text-transform: uppercase;
         }
+        #btn-true { background-color: var(--green); }
+        #btn-false { background-color: var(--red); }
 
-        .game-btn:active {
-            transform: scale(0.95);
-        }
-
-        #btn-true {
-            background-color: #4CAF50; /* Green */
-        }
-        
-        #btn-false {
-            background-color: #F44336; /* Red */
-        }
-
-        /* --- Start Screen Overlay --- */
-        #start-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        #start-btn {
-            padding: 20px 60px;
-            font-size: 2rem;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* --- Game Over / LOSER Screen --- */
-        #loser-screen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
-        }
-
+        /* --- LOSER SCREEN --- */
+        #loser-screen { background-color: black; }
         #loser-text {
-            color: red;
+            color: #ff0000;
             font-size: 8rem;
             font-weight: 900;
-            font-family: 'Courier New', Courier, monospace;
-            text-shadow: 0 0 10px darkred;
+            font-family: Impact, sans-serif;
+            text-shadow: 0 0 20px darkred;
+            margin-bottom: 10px;
+            animation: shake 0.5s;
+        }
+        .stats-box {
+            color: white;
+            text-align: center;
             margin-bottom: 30px;
         }
+        .stats-main { font-size: 3rem; font-weight: bold; margin-bottom: 10px; }
+        .stats-sub { font-size: 1.5rem; color: #aaa; }
 
-        #play-again-btn {
-            padding: 10px 30px;
-            font-size: 1.2rem;
-            background-color: transparent;
-            border: 2px solid red;
-            color: red;
-            cursor: pointer;
-            text-transform: uppercase;
+        /* --- OPTIONS --- */
+        .option-group { text-align: center; margin-bottom: 30px; width: 80%; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        
+        .math-tiny { font-size: 2rem !important; }
+        .math-micro { font-size: 1.5rem !important; }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
-
-        #play-again-btn:hover {
-            background-color: red;
-            color: black;
-        }
-
     </style>
 </head>
 <body>
 
-    <div id="start-screen">
+    <div id="start-screen" class="screen active">
         <h1>THE MATH GAME</h1>
-        <button id="start-btn" onclick="startGame()">START</button>
-        <p style="margin-top:20px; color:#666;">Think Fast.</p>
+        
+        <div class="input-group">
+            <input type="text" id="player-name" placeholder="Enter Your Name" maxlength="15">
+        </div>
+
+        <button class="menu-btn btn-start" onclick="startGame()">START GAME</button>
+        <button class="menu-btn btn-blue" onclick="openLeaderboard()">LEADERBOARD</button>
+        <button class="menu-btn btn-secondary" onclick="showScreen('options-screen')">OPTIONS</button>
     </div>
 
-    <div id="game-container">
-        <div id="timer-container">
-            <div id="timer-bar"></div>
+    <div id="options-screen" class="screen">
+        <h1>OPTIONS</h1>
+        <div class="option-group">
+            <label style="font-size:1.5rem; color:var(--primary);">Time Limit</label>
+            <input type="range" id="time-slider" min="2" max="10" value="5" step="1" oninput="updateTimeLabel()">
+            <div id="time-label" style="font-size:2rem; font-weight:bold; color:var(--accent);">5 Seconds</div>
         </div>
-        
-        <div id="q-number-display">Q.1</div>
-        
-        <div id="question-text">Ready?</div>
+        <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">BACK</button>
+    </div>
 
+    <div id="leaderboard-screen" class="screen">
+        <button id="copy-btn" class="menu-btn" onclick="copyLeaderboardData()">COPY DATA</button>
+        
+        <h1>HALL OF FAME</h1>
+        
+        <div id="leaderboard-list">
+            <div class="lb-header">
+                <span class="col-rank">#</span>
+                <span class="col-name">Name</span>
+                <span class="col-score">Score</span>
+                <span class="col-time">Avg Time</span>
+            </div>
+            <div id="lb-content">
+                </div>
+        </div>
+
+        <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">BACK</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div id="timer-container"><div id="timer-bar"></div></div>
+        <div id="q-number-display">Q.1</div>
+        <div id="question-text">Ready?</div>
         <div class="btn-container">
             <button id="btn-true" class="game-btn" onclick="handleInput(true)">True</button>
             <button id="btn-false" class="game-btn" onclick="handleInput(false)">False</button>
         </div>
     </div>
 
-    <div id="loser-screen">
+    <div id="loser-screen" class="screen">
         <div id="loser-text">LOSER</div>
-        <button id="play-again-btn" onclick="resetGame()">Play Again</button>
+        <div class="stats-box">
+            <div id="final-score" class="stats-main">Score: 0</div>
+            <div id="final-time" class="stats-sub">Avg Time: 0.000s</div>
+        </div>
+        <button class="menu-btn btn-secondary" style="border:2px solid red; background:transparent; color:red;" onclick="showScreen('start-screen')">MAIN MENU</button>
     </div>
 
     <script>
-        // --- Game Config ---
-        const TIME_LIMIT_MS = 2500; // 2.5 seconds per question
+        // --- DATA & STATE ---
+        let leaderboardData = []; 
+        let timeLimitSeconds = 5; 
         let currentLevel = 1;
         let isGameActive = false;
         let timerInterval;
-        let currentAnswer = true; // Stores the correct answer for the current round
+        let currentAnswer = true;
+        let currentPlayerName = "";
 
-        // --- DOM Elements ---
-        const startScreen = document.getElementById('start-screen');
-        const loserScreen = document.getElementById('loser-screen');
+        let questionStartTime = 0;
+        let totalReactionTime = 0; 
+
+        // --- DOM ---
+        const timeSlider = document.getElementById('time-slider');
+        const timeLabel = document.getElementById('time-label');
         const qNumDisplay = document.getElementById('q-number-display');
         const qTextDisplay = document.getElementById('question-text');
         const timerBar = document.getElementById('timer-bar');
+        const nameInput = document.getElementById('player-name');
+        const lbContent = document.getElementById('lb-content');
 
-        // --- Math Generators ---
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            fetchLeaderboard();
+        };
 
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch('leaderboard.txt');
+                if (!response.ok) throw new Error("File not found");
+                const text = await response.text();
+                leaderboardData = text.trim() ? JSON.parse(text) : [];
+            } catch (error) {
+                // Silently fail or use empty array
+                leaderboardData = [];
+            }
         }
 
-        // Generates easy solvable math (Levels 1-5)
+        // --- NAVIGATION ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function updateTimeLabel() {
+            timeLimitSeconds = timeSlider.value;
+            timeLabel.textContent = `${timeLimitSeconds} Seconds`;
+        }
+
+        // --- LEADERBOARD LOGIC ---
+
+        function openLeaderboard() {
+            renderLeaderboard();
+            showScreen('leaderboard-screen');
+        }
+
+        function renderLeaderboard() {
+            lbContent.innerHTML = "";
+            
+            // Sort: High Score > Low Time
+            leaderboardData.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                } else {
+                    return (a.time || 999) - (b.time || 999);
+                }
+            });
+
+            if (leaderboardData.length === 0) {
+                lbContent.innerHTML = "<div class='lb-entry' style='justify-content:center'>No records yet.</div>";
+                return;
+            }
+
+            leaderboardData.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'lb-entry';
+                if(index === 0) div.classList.add('gold');
+
+                const timeDisplay = entry.time ? parseFloat(entry.time).toFixed(3) + 's' : '---';
+
+                div.innerHTML = `
+                    <span class="col-rank">${index + 1}</span>
+                    <span class="col-name">${entry.name}</span>
+                    <span class="col-score">${entry.score}</span>
+                    <span class="col-time">${timeDisplay}</span>
+                `;
+                lbContent.appendChild(div);
+            });
+        }
+
+        function updateLeaderboard(score, avgTime) {
+            // ** LOGIC: If no name was entered, STOP here. Do not save.
+            if (!currentPlayerName || currentPlayerName.trim() === "") return;
+            
+            const existingUser = leaderboardData.find(u => u.name === currentPlayerName);
+            
+            if (existingUser) {
+                const oldScore = existingUser.score;
+                const oldTime = existingUser.time || 9999;
+
+                if (score > oldScore) {
+                    existingUser.score = score;
+                    existingUser.time = avgTime;
+                } else if (score === oldScore && avgTime < oldTime) {
+                    existingUser.time = avgTime;
+                }
+            } else {
+                leaderboardData.push({ name: currentPlayerName, score: score, time: avgTime });
+            }
+
+            leaderboardData.sort((a, b) => b.score - a.score);
+            if(leaderboardData.length > 50) leaderboardData.pop();
+        }
+
+        function copyLeaderboardData() {
+            const dataStr = JSON.stringify(leaderboardData);
+            navigator.clipboard.writeText(dataStr).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = "COPIED";
+                btn.style.backgroundColor = "#27ae60";
+                btn.style.color = "white";
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = "";
+                    btn.style.color = "";
+                }, 2000);
+            }).catch(err => {
+                alert("Failed to copy. Please allow clipboard permissions.");
+            });
+        }
+
+        // --- MATH GENERATORS ---
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
         function generateEasyMath(wantTrue) {
-            const operations = ['+', '-', '*'];
-            const op = operations[getRandomInt(0, 2)];
-            let a = getRandomInt(1, 10);
-            let b = getRandomInt(1, 10);
-            let result;
-
-            if (op === '+') result = a + b;
-            if (op === '-') result = a - b;
-            if (op === '*') result = a * b;
-
-            // If we want a False statement, modify the result
-            let displayedResult = wantTrue ? result : result + getRandomInt(1, 3);
-            
-            // Occasionally for false, make sure we don't accidentally pick the right answer (rare edge case)
-            if (!wantTrue && displayedResult === result) displayedResult = result + 1;
-
-            return `${a} ${op} ${b} = ${displayedResult}`;
+            const a = rand(2, 9);
+            const b = rand(2, 9);
+            const ops = ['+', '-', '*'];
+            const op = ops[rand(0, 2)];
+            let res;
+            if(op === '+') res = a + b;
+            if(op === '-') res = a - b;
+            if(op === '*') res = a * b;
+            let displayRes = wantTrue ? res : res + rand(1, 3);
+            if (!wantTrue && displayRes === res) displayRes++; 
+            return `${a} ${op} ${b} = ${displayRes}`;
         }
 
-        // Generates confusing/hard text (Levels 6+)
-        // Note: The math content doesn't need to be mathematically accurate to the truth value
-        // because the user relies on the "Fake Q Number" rule.
-        function generateHardMath() {
-            const types = [
-                // Large Numbers
-                () => `${getRandomInt(10000, 99999)} × ${getRandomInt(11, 99)} = ${getRandomInt(100000, 9999999)}`,
-                () => `${getRandomInt(10000, 99999)} + ${getRandomInt(10000, 99999)} = ${getRandomInt(20000, 199999)}`,
-                // Calculus / Limits
-                () => `lim(x→∞) (1 + 1/x)^x = ${getRandomInt(1, 5) === 1 ? 'e' : getRandomInt(1, 10)}`,
-                () => `∫ e^x dx = e^x + ${getRandomInt(0, 1) === 0 ? 'C' : '0'}`,
-                () => `d/dx (sin x) = ${getRandomInt(0, 1) === 0 ? 'cos x' : '-cos x'}`,
-                // Theorems / Logic
-                () => `∑(n=1 to ∞) 1/n² = π²/${getRandomInt(5, 7)}`,
-                () => `e^(iπ) + 1 = ${getRandomInt(0, 1)}`,
-                () => `log₁₀(1000) = ${getRandomInt(2, 4)}`
-            ];
+        function generateHardMath(wantTrue) {
+            // Increased range to include binary/hex (66-70)
+            const type = rand(0, 70);
             
-            const randomType = types[getRandomInt(0, types.length - 1)];
-            return randomType();
+            const n = rand(2, 9);
+            const k = rand(2, 12);
+            const bigA = rand(100, 999);
+            const bigB = rand(100, 999);
+            const bigC = rand(50, 200);
+
+            const offsetSmall = rand(1, 8); 
+            const offsetBig = rand(5, 15);
+
+            switch(type) {
+                // --- ARITHMETIC (0-4) ---
+                case 0: return wantTrue ? `${bigA} + ${bigB} = ${bigA+bigB}` : `${bigA} + ${bigB} = ${bigA+bigB+10}`;
+                case 1: return wantTrue ? `${bigA} - ${bigC} = ${bigA-bigC}` : `${bigA} - ${bigC} = ${bigA-bigC-5}`;
+                case 2: return wantTrue ? `100 × ${k} = ${100*k}` : `100 × ${k} = ${100*k + 50}`;
+                case 3: let ans3 = bigC + (n * k); return wantTrue ? `${bigC} + ${n}×${k} = ${ans3}` : `${bigC} + ${n}×${k} = ${ans3-1}`;
+                case 4: return wantTrue ? `${n*k} ÷ ${n} = ${k}` : `${n*k} ÷ ${n} = ${k+1}`;
+                
+                // --- CALCULUS (5-21) ---
+                case 5: return wantTrue ? `d/dx(x^${n}) = ${n}x^${n-1}` : `d/dx(x^${n}) = x^${n+1}`;
+                case 6: return wantTrue ? `d/dx(sin x) = cos x` : `d/dx(sin x) = -sin x`;
+                case 7: return wantTrue ? `d/dx(cos x) = -sin x` : `d/dx(cos x) = sin x`;
+                case 8: return wantTrue ? `d/dx(e^${n}x) = ${n}e^${n}x` : `d/dx(e^${n}x) = e^${n}x`;
+                case 9: return wantTrue ? `d/dx(ln x) = 1/x` : `d/dx(ln x) = e^x`;
+                case 10: return wantTrue ? `d/dx(${bigA}) = 0` : `d/dx(${bigA}) = ${bigA}`;
+                case 11: return wantTrue ? `d/dx(tan x) = sec²x` : `d/dx(tan x) = cot x`;
+                case 12: return wantTrue ? `d/dx(x⁻¹) = -x⁻²` : `d/dx(x⁻¹) = ln x`;
+                
+                // INTEGRALS with + C added
+                case 13: return wantTrue ? `∫ x^${n} dx = x^${n+1}/${n+1} + C` : `∫ x^${n} dx = ${n}x^${n-1} + C`;
+                case 14: return wantTrue ? `∫ e^x dx = e^x + C` : `∫ e^x dx = ln x + C`;
+                case 15: return wantTrue ? `∫ (1/x) dx = ln|x| + C` : `∫ (1/x) dx = -1/x² + C`;
+                case 16: return wantTrue ? `∫₀¹ 1 dx = 1` : `∫₀¹ 1 dx = 0`; // Definite integral, no C
+                case 17: return wantTrue ? `∫ sin x dx = -cos x + C` : `∫ sin x dx = cos x + C`;
+                
+                case 18: return wantTrue ? `lim(x→∞) 1/x = 0` : `lim(x→∞) 1/x = ∞`;
+                case 19: return wantTrue ? `lim(x→0) (sin x)/x = 1` : `lim(x→0) (sin x)/x = 0`;
+                case 20: return wantTrue ? `lim(x→∞) ${n} = ${n}` : `lim(x→∞) ${n} = 0`;
+                case 21: return wantTrue ? `det(I) = 1` : `det(I) = 0`;
+                
+                // --- VECTORS & MATRICES (22-30) ---
+                case 22: return wantTrue ? `<b>i</b> · <b>j</b> = 0` : `<b>i</b> · <b>j</b> = 1`;
+                case 23: return wantTrue ? `<b>i</b> × <b>j</b> = <b>k</b>` : `<b>i</b> × <b>j</b> = -<b>k</b>`;
+                case 24: return wantTrue ? `(Aᵀ)ᵀ = A` : `(Aᵀ)ᵀ = A⁻¹`;
+                case 25: return wantTrue ? `A · A⁻¹ = I` : `A · A⁻¹ = 0`;
+                case 26: return wantTrue ? `det(0) = 0` : `det(0) = 1`;
+                case 27: return wantTrue ? `i² = -1` : `i² = 1`;
+                case 28: return wantTrue ? `|${n}i| = ${n}` : `|${n}i| = -${n}`;
+                case 29: return wantTrue ? `e^(iπ) = -1` : `e^(iπ) = 1`;
+                case 30: return wantTrue ? `conj(a+bi) = a-bi` : `conj(a+bi) = -a+bi`;
+                
+                // --- TRIG & LOGS (31-41) ---
+                case 31: return wantTrue ? `sin²x + cos²x = 1` : `sin²x + cos²x = tan x`;
+                case 32: return wantTrue ? `tan x = sin x / cos x` : `tan x = cos x / sin x`;
+                case 33: return wantTrue ? `sec x = 1/cos x` : `sec x = 1/sin x`;
+                case 34: return wantTrue ? `csc x = 1/sin x` : `csc x = 1/cos x`;
+                case 35: return wantTrue ? `sin(0) = 0` : `sin(0) = 1`;
+                case 36: return wantTrue ? `cos(0) = 1` : `cos(0) = 0`;
+                case 37: return wantTrue ? `log(ab) = log a + log b` : `log(ab) = log a × log b`;
+                case 38: return wantTrue ? `log(a/b) = log a - log b` : `log(a/b) = log a / log b`;
+                case 39: return wantTrue ? `log(x^${n}) = ${n}log(x)` : `log(x^${n}) = log(x)/${n}`;
+                case 40: return wantTrue ? `ln(e) = 1` : `ln(e) = 0`;
+                case 41: return wantTrue ? `log(1) = 0` : `log(1) = 1`;
+                
+                // --- SETS & MISC (42-49) ---
+                case 42: return wantTrue ? `A ∪ A = A` : `A ∪ A = ∅`;
+                case 43: return wantTrue ? `A ∩ A = A` : `A ∩ A = U`;
+                case 44: return wantTrue ? `A ∩ ∅ = ∅` : `A ∩ ∅ = A`;
+                case 45: return wantTrue ? `(A')' = A` : `(A')' = ∅`;
+                case 46: return wantTrue ? `3! = 6` : `3! = 9`;
+                case 47: return wantTrue ? `${bigA}⁰ = 1` : `${bigA}⁰ = 0`;
+                case 48: return wantTrue ? `√(${n*n}) = ${n}` : `√(${n*n}) = ${n+1}`;
+                case 49: return wantTrue ? `x^a · x^b = x^(a+b)` : `x^a · x^b = x^(ab)`;
+
+                // --- HARD INEQUALITIES & BIG OPS (50-65) ---
+                
+                // Mult > 
+                case 50: {
+                    let m1 = rand(15, 40), m2 = rand(5, 15);
+                    let prod = m1 * m2; 
+                    let target = wantTrue ? prod - offsetBig : prod + offsetBig;
+                    return `${m1} × ${m2} > ${target}`;
+                }
+                
+                // Mult < 
+                case 51: {
+                    let m1 = rand(15, 40), m2 = rand(5, 15);
+                    let prod = m1 * m2; 
+                    let target = wantTrue ? prod + offsetBig : prod - offsetBig;
+                    return `${m1} × ${m2} < ${target}`;
+                }
+
+                // Add > 
+                case 52: {
+                    let a1 = rand(100, 500), a2 = rand(100, 500);
+                    let sum = a1 + a2;
+                    let target = wantTrue ? sum - rand(10, 30) : sum + rand(10, 30);
+                    return `${a1} + ${a2} > ${target}`;
+                }
+
+                // Square > 
+                case 53: {
+                    let s = rand(12, 30); 
+                    let sq = s * s;
+                    let target = wantTrue ? sq - rand(10, 50) : sq + rand(10, 50);
+                    return `${s}² > ${target}`;
+                }
+
+                // Square < 
+                case 54: {
+                    let s = rand(12, 30);
+                    let sq = s * s;
+                    let target = wantTrue ? sq + rand(10, 50) : sq - rand(10, 50);
+                    return `${s}² < ${target}`;
+                }
+
+                // Root > 
+                case 55: {
+                    let r = rand(100, 400); 
+                    let realRoot = Math.sqrt(r);
+                    let intComp = Math.floor(realRoot);
+                    let comp = wantTrue ? intComp : intComp + 1;
+                    if (!wantTrue && comp < realRoot) comp++; 
+                    return `√${r} > ${comp}`;
+                }
+
+                // Root < 
+                case 56: {
+                    let r = rand(100, 400);
+                    let realRoot = Math.sqrt(r);
+                    let intComp = Math.ceil(realRoot);
+                    let comp = wantTrue ? intComp : intComp - 2;
+                    return `√${r} < ${comp}`;
+                }
+
+                // Division >
+                case 57: {
+                    let top = rand(200, 500);
+                    let bot = rand(5, 10);
+                    let div = Math.floor(top / bot);
+                    let target = wantTrue ? div - rand(1, 5) : div + rand(1, 5);
+                    return `${top} ÷ ${bot} > ${target}`;
+                }
+
+                // Mixed: Mult + Add 
+                case 58: {
+                    let m = rand(5, 12);
+                    let x = rand(10, 20);
+                    let add = rand(5, 20);
+                    let res = (m * x) + add;
+                    let target = wantTrue ? res - rand(5, 15) : res + rand(5, 15);
+                    return `${m}×${x} + ${add} > ${target}`;
+                }
+
+                // Big Equality: Mult
+                case 59: {
+                    let a = rand(20, 50);
+                    let b = rand(3, 9);
+                    let res = a * b;
+                    return wantTrue ? `${a} × ${b} = ${res}` : `${a} × ${b} = ${res + rand(1, 9) * (Math.random()<.5?-1:1)}`;
+                }
+
+                // Big Equality: Subtraction
+                case 60: {
+                    let a = rand(500, 999);
+                    let b = rand(200, 400);
+                    let res = a - b;
+                    return wantTrue ? `${a} - ${b} = ${res}` : `${a} - ${b} = ${res + 10}`;
+                }
+
+                // Fraction/Percent
+                case 61: {
+                    let p = [10, 20, 25, 50][rand(0, 3)];
+                    let v = rand(100, 400);
+                    let val = (p / 100) * v;
+                    let target = wantTrue ? val - 5 : val + 5;
+                    return `${p}% of ${v} > ${target}`;
+                }
+
+                // Simple cube comparison
+                case 62: {
+                    let c = rand(2, 6); 
+                    let cube = c*c*c;
+                    let target = wantTrue ? cube - 5 : cube + 5;
+                    return `${c}³ > ${target}`;
+                }
+
+                // Double Add <
+                case 63: {
+                    let a = rand(50, 99), b = rand(50, 99), c = rand(50, 99);
+                    let sum = a + b + c;
+                    let target = wantTrue ? sum + 10 : sum - 10;
+                    return `${a} + ${b} + ${c} < ${target}`;
+                }
+
+                // Large Division Equality
+                case 64: {
+                    let ans = rand(12, 35);
+                    let div = rand(4, 9);
+                    let top = ans * div;
+                    return wantTrue ? `${top} ÷ ${div} = ${ans}` : `${top} ÷ ${div} = ${ans + 1}`;
+                }
+
+                // Power of 2 comparison
+                case 65: {
+                    let p = rand(5, 9); 
+                    let val = Math.pow(2, p);
+                    let target = wantTrue ? val - rand(5, 20) : val + rand(5, 20);
+                    return `2^${p} > ${target}`;
+                }
+
+                // --- NEW: BINARY & HEXADECIMAL (66-70) ---
+                
+                // Binary Equality
+                case 66: {
+                    let num = rand(3, 31);
+                    let bin = num.toString(2);
+                    return wantTrue ? `${bin}₂ = ${num}` : `${bin}₂ = ${num + 1}`;
+                }
+
+                // Hex Equality
+                case 67: {
+                    let num = rand(10, 255);
+                    let hex = "0x" + num.toString(16).toUpperCase();
+                    return wantTrue ? `${hex} = ${num}` : `${hex} = ${num + rand(1,10)}`;
+                }
+
+                // Binary Comparison >
+                case 68: {
+                    let num = rand(5, 20);
+                    let bin = num.toString(2);
+                    let target = wantTrue ? num - 1 : num + 1;
+                    return `${bin}₂ > ${target}`;
+                }
+
+                // Hex Comparison >
+                case 69: {
+                    let num = rand(16, 50);
+                    let hex = "0x" + num.toString(16).toUpperCase();
+                    let target = wantTrue ? num - 2 : num + 2;
+                    return `${hex} > ${target}`;
+                }
+
+                // Binary Math Addition
+                case 70: {
+                    let n1 = rand(2, 6);
+                    let n2 = rand(2, 6);
+                    let sum = n1 + n2;
+                    let bin1 = n1.toString(2);
+                    let bin2 = n2.toString(2);
+                    let binSum = sum.toString(2);
+                    let binWrong = (sum + 1).toString(2);
+                    return wantTrue ? `${bin1}₂ + ${bin2}₂ = ${binSum}₂` : `${bin1}₂ + ${bin2}₂ = ${binWrong}₂`;
+                }
+
+                default: return `1 + 1 = 2`;
+            }
         }
 
-        // --- Core Logic ---
+        // --- GAMEPLAY ENGINE ---
 
         function startGame() {
-            startScreen.style.display = 'none';
-            loserScreen.style.display = 'none';
+            // ** LOGIC: removed alert(). Just take the value.
+            currentPlayerName = nameInput.value.trim();
+            
+            // Reset Game Stats
             currentLevel = 1;
+            totalReactionTime = 0;
             isGameActive = true;
+            
+            showScreen('game-screen');
             nextQuestion();
-        }
-
-        function resetGame() {
-            loserScreen.style.display = 'none';
-            startScreen.style.display = 'flex';
         }
 
         function gameOver() {
             isGameActive = false;
-            clearInterval(timerInterval);
-            loserScreen.style.display = 'flex';
+            clearTimeout(timerInterval);
+            
+            // Stats Calculation
+            let finalScore = currentLevel - 1;
+            let avgTime = finalScore > 0 ? (totalReactionTime / finalScore) : 0;
+            
+            // UI Update
+            document.getElementById('final-score').textContent = `Score: ${finalScore}`;
+            document.getElementById('final-time').textContent = `Avg Time: ${avgTime.toFixed(3)}s`;
+            
+            showScreen('loser-screen');
+            updateLeaderboard(finalScore, avgTime);
         }
 
         function startTimer() {
-            // Reset bar
             timerBar.style.transition = 'none';
             timerBar.style.width = '100%';
-            
-            // Force reflow
-            void timerBar.offsetWidth;
+            void timerBar.offsetWidth; 
 
-            // Start animation
-            timerBar.style.transition = `width ${TIME_LIMIT_MS}ms linear`;
+            timerBar.style.transition = `width ${timeLimitSeconds}s linear`;
             timerBar.style.width = '0%';
 
-            // Clear existing logic timer
-            clearInterval(timerInterval);
-
-            // Set new logic timer
+            clearTimeout(timerInterval);
             timerInterval = setTimeout(() => {
                 if(isGameActive) gameOver();
-            }, TIME_LIMIT_MS);
+            }, timeLimitSeconds * 1000);
         }
 
         function nextQuestion() {
             if (!isGameActive) return;
 
+            // Start Timing
             startTimer();
+            questionStartTime = performance.now(); 
 
-            // 1. Decide if the correct answer is True or False
             const isTrue = Math.random() < 0.5;
             currentAnswer = isTrue;
 
-            // 2. Generate the Fake Question Number based on the Rule
-            // Rule: True = Even Number, False = Odd Number
-            let fakeQNum;
-            if (isTrue) {
-                // Generate Even
-                fakeQNum = getRandomInt(10, 500) * 2; 
+            // Rule: True=Even, False=Odd
+            const base = rand(10, 400);
+            let fakeNum = isTrue ? (base * 2) : (base * 2 + 1);
+            qNumDisplay.textContent = `Q.${fakeNum}`;
+
+            // ** LOGIC: Only first 3 questions are "Easy"
+            if (currentLevel <= 3) {
+                qTextDisplay.innerHTML = generateEasyMath(isTrue);
+                qTextDisplay.classList.remove('math-tiny', 'math-micro');
             } else {
-                // Generate Odd
-                fakeQNum = (getRandomInt(10, 500) * 2) + 1;
+                let text = generateHardMath(isTrue);
+                // ** LOGIC: Use innerHTML to support bold tags
+                qTextDisplay.innerHTML = text; 
+                qTextDisplay.classList.remove('math-tiny', 'math-micro');
+                if(text.length > 25) qTextDisplay.classList.add('math-tiny');
+                if(text.length > 35) qTextDisplay.classList.add('math-micro');
             }
-
-            qNumDisplay.textContent = `Q.${fakeQNum}`;
-
-            // 3. Generate the Text
-            if (currentLevel <= 5) {
-                // Easy Mode: Math must match the truth value
-                qTextDisplay.textContent = generateEasyMath(isTrue);
-            } else {
-                // Hard Mode: Just show scary math. 
-                // The math string itself doesn't matter, only the Q number rule matters.
-                qTextDisplay.textContent = generateHardMath();
-            }
-
             currentLevel++;
         }
 
-        function handleInput(playerChoseTrue) {
-            if (!isGameActive) return;
+        function handleInput(playerChoice) {
+            if(!isGameActive) return;
 
-            if (playerChoseTrue === currentAnswer) {
-                // Correct
-                clearInterval(timerInterval); // Stop timer for a split second
+            if(playerChoice === currentAnswer) {
+                // Correct Answer
+                let endTime = performance.now();
+                let durationSeconds = (endTime - questionStartTime) / 1000;
+                totalReactionTime += durationSeconds;
+                
+                clearTimeout(timerInterval);
                 nextQuestion();
             } else {
-                // Wrong
+                // Wrong Answer
                 gameOver();
             }
         }
-
     </script>
 </body>
 </html>
