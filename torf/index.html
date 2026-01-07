@@ -3,36 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Math Game - Ultimate</title>
+    <title>The Math Game - Competitive Speed</title>
     <style>
         :root {
-            /* Vibrant Gradients */
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --glass: rgba(255, 255, 255, 0.95);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            
-            /* Button Gradients */
-            --btn-blue: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            --btn-purple: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
-            --btn-green: linear-gradient(to bottom, #0ba360 0%, #3cba92 100%);
-            --btn-red: linear-gradient(to bottom, #d31027 0%, #ea384d 100%);
-            --btn-gray: linear-gradient(to right, #bdc3c7 0%, #2c3e50 100%);
-
-            --text-dark: #2d3436;
+            --primary: #2c3e50;
+            --accent: #8e44ad;
+            --blue: #3498db; 
+            --blue-dark: #2980b9;
+            --green: #27ae60;
+            --red: #c0392b;
+            --bg: #ecf0f1;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg-gradient);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
             user-select: none;
-            color: var(--text-dark);
         }
 
         /* --- SCREENS --- */
@@ -42,326 +35,284 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: none; /* Flex when active */
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            background-color: white;
             z-index: 10;
         }
 
         .screen.active { display: flex; }
 
-        /* Generic Panel Container for Menus */
-        .panel {
-            background: var(--glass);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 90%;
-            max-width: 450px;
-            animation: floatUp 0.5s ease-out;
-        }
-
-        @keyframes floatUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- TYPOGRAPHY --- */
-        h1 {
-            font-size: 3.5rem;
-            margin: 0 0 30px 0;
-            background: -webkit-linear-gradient(#6a11cb, #2575fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* --- START SCREEN --- */
+        #start-screen h1 {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 2px;
             text-align: center;
-            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
         }
 
-        /* --- INPUTS & BUTTONS --- */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         #player-name {
             padding: 15px;
             font-size: 1.5rem;
-            border: 2px solid #dfe6e9;
-            border-radius: 50px;
-            width: 100%;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 250px;
             text-align: center;
-            margin-bottom: 25px;
-            outline: none;
-            transition: 0.3s;
-            background: #f9f9f9;
         }
-        #player-name:focus { border-color: #6a11cb; box-shadow: 0 0 10px rgba(106, 17, 203, 0.2); }
 
         .menu-btn {
-            width: 100%;
+            width: 250px;
             padding: 15px;
-            margin: 8px 0;
+            margin: 10px;
             font-size: 1.2rem;
             border: none;
-            border-radius: 50px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 700;
+            font-weight: bold;
+            transition: transform 0.1s, background-color 0.2s;
             text-transform: uppercase;
             color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
         }
 
-        .menu-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-        .menu-btn:active { transform: translateY(1px); }
+        .menu-btn:active { transform: scale(0.95); }
 
-        .btn-start { background-image: var(--btn-purple); }
-        .btn-blue { background-image: var(--btn-blue); }
-        .btn-secondary { background: #95a5a6; } /* Standard gray for options */
+        /* Button Colors */
+        .btn-start { background-color: var(--accent); }
+        .btn-secondary { background-color: #95a5a6; }
         
-        /* --- LEADERBOARD --- */
+        /* New Beautiful Blue Button */
+        .btn-blue { 
+            background-color: var(--blue);
+            box-shadow: 0 4px 0 var(--blue-dark);
+        }
+        .btn-blue:hover { background-color: var(--blue-dark); }
+        .btn-blue:active { box-shadow: 0 2px 0 var(--blue-dark); transform: translateY(2px); }
+
+        /* --- LEADERBOARD SCREEN --- */
         #leaderboard-list {
-            width: 100%;
-            height: 400px;
+            width: 90%;
+            max-width: 600px;
+            height: 450px; /* Fixed height for consistency */
             overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            margin: 20px 0;
-            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
 
-        /* Top Right Copy Button */
+        /* Copy Button - Top Right Corner */
         #copy-btn {
             position: absolute;
             top: 20px;
             right: 20px;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.5);
+            width: auto;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            background-color: #bdc3c7;
+            color: var(--primary);
             border-radius: 20px;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: 0.2s;
+            box-shadow: none;
+            border: 1px solid #ccc;
         }
-        #copy-btn:hover { background: white; color: #333; }
+        #copy-btn:hover { background-color: #ecf0f1; }
 
         .lb-header {
             display: flex;
+            justify-content: space-between;
             padding: 15px;
-            background: #f1f2f6;
-            color: #2f3542;
-            font-weight: 800;
-            font-size: 0.9rem;
-            text-transform: uppercase;
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
             position: sticky;
             top: 0;
-            border-bottom: 2px solid #ddd;
+            z-index: 2;
         }
 
         .lb-entry {
             display: flex;
+            justify-content: space-between;
             padding: 12px 15px;
-            border-bottom: 1px solid #f1f1f1;
-            font-size: 1rem;
-            color: #57606f;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+            color: var(--primary);
         }
-        .col-rank { width: 10%; font-weight: bold; }
-        .col-name { width: 40%; text-align: left; }
-        .col-score { width: 20%; text-align: center; font-weight: bold; color: #3742fa; }
-        .col-time { width: 30%; text-align: right; font-family: monospace; }
         
-        .lb-entry.gold { background: #fffbe6; color: #e1b12c; font-weight: bold; }
+        .col-rank { width: 10%; }
+        .col-name { width: 40%; text-align: left; }
+        .col-score { width: 20%; text-align: center; font-weight: bold; }
+        .col-time { width: 30%; text-align: right; color: #7f8c8d; font-family: monospace; }
 
-        /* --- GAME SCREEN LAYOUT --- */
-        /* Make the game screen full layout different */
-        #game-screen {
-            background: #fff;
-            justify-content: flex-start; /* Stack from top */
-        }
+        .lb-entry:nth-child(even) { background-color: #f9f9f9; }
+        .lb-entry.gold { background-color: #f1c40f; color: #000; } 
+        .lb-entry.gold .col-time { color: #333; }
 
-        /* Top Section: Timer */
+        /* --- GAME UI --- */
         #timer-container {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 15px;
-            background: #dfe6e9;
+            height: 25px;
+            background-color: #ddd;
         }
+
         #timer-bar {
             height: 100%;
             width: 100%;
-            background: linear-gradient(90deg, #00f2fe, #4facfe);
-            border-radius: 0 0 10px 0;
-        }
-
-        /* Middle Section: Question area */
-        #game-content {
-            flex-grow: 1; /* Takes up all available space above buttons */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            width: 100%;
+            background: linear-gradient(90deg, #8e44ad, #2980b9);
         }
 
         #q-number-display {
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: #b2bec3;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
+            position: absolute;
+            top: 40px;
+            left: 20px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #555;
+            background: #eee;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent);
         }
 
         #question-text {
-            font-size: 4rem;
-            font-weight: 800;
-            color: #2d3436;
-            font-family: 'Times New Roman', serif;
+            font-size: 3rem;
+            font-weight: bold;
             text-align: center;
+            margin-bottom: 60px;
             padding: 0 20px;
-            line-height: 1.1;
+            color: #222;
+            font-family: 'Times New Roman', Times, serif; 
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Bottom Section: Buttons */
-        .game-controls {
-            width: 100%;
-            height: 40%; /* Fills bottom 40% of screen */
+        .btn-container {
             display: flex;
-            box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+            gap: 20px;
+            width: 90%;
+            max-width: 600px;
+            height: 180px;
         }
 
         .game-btn {
-            flex: 1; /* Split 50/50 */
+            flex: 1;
+            font-size: 2.5rem;
+            font-weight: bold;
             border: none;
-            font-size: 3rem;
-            font-weight: 900;
+            border-radius: 15px;
+            cursor: pointer;
             color: white;
             text-transform: uppercase;
-            cursor: pointer;
-            transition: filter 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
         }
-
-        #btn-true { 
-            background-image: var(--btn-green); 
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
-        }
-        #btn-false { 
-            background-image: var(--btn-red); 
-            /* Optional: Make a slight angled cut design if desired, but square is best for touch */
-        }
-
-        .game-btn:active { filter: brightness(0.9); }
-        .game-btn:hover { filter: brightness(1.1); z-index: 2;}
+        #btn-true { background-color: var(--green); }
+        #btn-false { background-color: var(--red); }
 
         /* --- LOSER SCREEN --- */
-        #loser-screen { background-color: #000; }
+        #loser-screen { background-color: black; }
         #loser-text {
-            color: #ff4757;
+            color: #ff0000;
             font-size: 8rem;
             font-weight: 900;
             font-family: Impact, sans-serif;
-            text-transform: uppercase;
-            text-shadow: 0 0 30px #d31027;
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-            transform: translate3d(0, 0, 0);
+            text-shadow: 0 0 20px darkred;
+            margin-bottom: 10px;
+            animation: shake 0.5s;
         }
-        .stats-box { margin-bottom: 40px; text-align: center; }
-        .stats-main { font-size: 4rem; color: white; font-weight: bold; }
-        .stats-sub { font-size: 1.5rem; color: #a4b0be; font-family: monospace; }
+        .stats-box {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .stats-main { font-size: 3rem; font-weight: bold; margin-bottom: 10px; }
+        .stats-sub { font-size: 1.5rem; color: #aaa; }
+
+        /* --- OPTIONS --- */
+        .option-group { text-align: center; margin-bottom: 30px; width: 80%; }
+        input[type=range] { width: 100%; cursor: pointer; }
         
-        .math-tiny { font-size: 2.5rem !important; }
-        .math-micro { font-size: 1.8rem !important; }
+        .math-tiny { font-size: 2rem !important; }
+        .math-micro { font-size: 1.5rem !important; }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(4px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-            40%, 60% { transform: translate3d(8px, 0, 0); }
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
     </style>
 </head>
 <body>
 
     <div id="start-screen" class="screen active">
-        <div class="panel">
-            <h1>Math Game <span style="font-size:1rem; display:block; color:#a4b0be; font-weight:400; letter-spacing:5px; margin-top:5px;">ULTIMATE</span></h1>
-            
-            <div class="input-group" style="width:100%">
-                <input type="text" id="player-name" placeholder="Enter Nickname" maxlength="12">
-            </div>
-
-            <button class="menu-btn btn-start" onclick="startGame()">Start Game</button>
-            <button class="menu-btn btn-blue" onclick="openLeaderboard()">Leaderboard</button>
-            <button class="menu-btn btn-secondary" onclick="showScreen('options-screen')">Options</button>
+        <h1>THE MATH GAME</h1>
+        
+        <div class="input-group">
+            <input type="text" id="player-name" placeholder="Enter Your Name" maxlength="15">
         </div>
+
+        <button class="menu-btn btn-start" onclick="startGame()">START GAME</button>
+        <button class="menu-btn btn-blue" onclick="openLeaderboard()">LEADERBOARD</button>
+        <button class="menu-btn btn-secondary" onclick="showScreen('options-screen')">OPTIONS</button>
     </div>
 
     <div id="options-screen" class="screen">
-        <div class="panel">
-            <h1>Options</h1>
-            <div style="width:100%; text-align:center; margin-bottom:30px;">
-                <label style="font-size:1.2rem; color:#636e72; font-weight:bold; display:block; margin-bottom:10px;">Time Per Question</label>
-                <input type="range" id="time-slider" min="2" max="10" value="5" step="1" oninput="updateTimeLabel()" style="width:100%; cursor: pointer;">
-                <div id="time-label" style="font-size:3rem; font-weight:bold; color:#0984e3; margin-top:10px;">5s</div>
-            </div>
-            <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">Back</button>
+        <h1>OPTIONS</h1>
+        <div class="option-group">
+            <label style="font-size:1.5rem; color:var(--primary);">Time Limit</label>
+            <input type="range" id="time-slider" min="2" max="10" value="5" step="1" oninput="updateTimeLabel()">
+            <div id="time-label" style="font-size:2rem; font-weight:bold; color:var(--accent);">5 Seconds</div>
         </div>
+        <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">BACK</button>
     </div>
 
     <div id="leaderboard-screen" class="screen">
-        <button id="copy-btn" onclick="copyLeaderboardData()">COPY DATA</button>
+        <button id="copy-btn" class="menu-btn" onclick="copyLeaderboardData()">COPY DATA</button>
         
-        <div class="panel" style="max-width:600px; width:95%;">
-            <h1>Hall of Fame</h1>
-            
-            <div id="leaderboard-list">
-                <div class="lb-header">
-                    <span class="col-rank">#</span>
-                    <span class="col-name">Name</span>
-                    <span class="col-score">Score</span>
-                    <span class="col-time">Avg Time</span>
-                </div>
-                <div id="lb-content">
-                    </div>
+        <h1>HALL OF FAME</h1>
+        
+        <div id="leaderboard-list">
+            <div class="lb-header">
+                <span class="col-rank">#</span>
+                <span class="col-name">Name</span>
+                <span class="col-score">Score</span>
+                <span class="col-time">Avg Time</span>
             </div>
-
-            <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">Back</button>
+            <div id="lb-content">
+                </div>
         </div>
+
+        <button class="menu-btn btn-secondary" onclick="showScreen('start-screen')">BACK</button>
     </div>
 
     <div id="game-screen" class="screen">
         <div id="timer-container"><div id="timer-bar"></div></div>
-        
-        <div id="game-content">
-            <div id="q-number-display">Question 1</div>
-            <div id="question-text">Ready?</div>
-        </div>
-
-        <div class="game-controls">
+        <div id="q-number-display">Q.1</div>
+        <div id="question-text">Ready?</div>
+        <div class="btn-container">
             <button id="btn-true" class="game-btn" onclick="handleInput(true)">True</button>
             <button id="btn-false" class="game-btn" onclick="handleInput(false)">False</button>
         </div>
     </div>
 
     <div id="loser-screen" class="screen">
-        <div id="loser-text">GAME OVER</div>
+        <div id="loser-text">LOSER</div>
         <div class="stats-box">
-            <div id="final-score" class="stats-main">0</div>
-            <div style="color:#aaa; font-weight:bold; text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;">Questions Solved</div>
-            <div id="final-time" class="stats-sub">Avg Speed: 0.000s</div>
+            <div id="final-score" class="stats-main">Score: 0</div>
+            <div id="final-time" class="stats-sub">Avg Time: 0.000s</div>
         </div>
-        <button class="menu-btn btn-secondary" style="background:transparent; border:2px solid #ff4757; color:#ff4757; width:200px;" onclick="showScreen('start-screen')">MAIN MENU</button>
+        <button class="menu-btn btn-secondary" style="border:2px solid red; background:transparent; color:red;" onclick="showScreen('start-screen')">MAIN MENU</button>
     </div>
 
     <script>
@@ -398,6 +349,7 @@
                 const text = await response.text();
                 leaderboardData = text.trim() ? JSON.parse(text) : [];
             } catch (error) {
+                // Silently fail or use empty array
                 leaderboardData = [];
             }
         }
@@ -410,7 +362,7 @@
 
         function updateTimeLabel() {
             timeLimitSeconds = timeSlider.value;
-            timeLabel.textContent = `${timeLimitSeconds}s`;
+            timeLabel.textContent = `${timeLimitSeconds} Seconds`;
         }
 
         // --- LEADERBOARD LOGIC ---
@@ -483,11 +435,12 @@
                 const btn = document.getElementById('copy-btn');
                 const originalText = btn.textContent;
                 btn.textContent = "COPIED";
-                btn.style.background = "#2ecc71";
+                btn.style.backgroundColor = "#27ae60";
                 btn.style.color = "white";
                 setTimeout(() => {
                     btn.textContent = originalText;
-                    btn.style.background = "rgba(255,255,255,0.2)";
+                    btn.style.backgroundColor = "";
+                    btn.style.color = "";
                 }, 2000);
             }).catch(err => {
                 alert("Failed to copy. Please allow clipboard permissions.");
@@ -602,8 +555,8 @@
             let avgTime = finalScore > 0 ? (totalReactionTime / finalScore) : 0;
             
             // UI Update
-            document.getElementById('final-score').textContent = finalScore;
-            document.getElementById('final-time').textContent = `Avg Speed: ${avgTime.toFixed(3)}s`;
+            document.getElementById('final-score').textContent = `Score: ${finalScore}`;
+            document.getElementById('final-time').textContent = `Avg Time: ${avgTime.toFixed(3)}s`;
             
             showScreen('loser-screen');
             updateLeaderboard(finalScore, avgTime);
@@ -636,7 +589,7 @@
             // Rule: True=Even, False=Odd
             const base = rand(10, 400);
             let fakeNum = isTrue ? (base * 2) : (base * 2 + 1);
-            qNumDisplay.textContent = `Question ${currentLevel}`;
+            qNumDisplay.textContent = `Q.${fakeNum}`;
 
             if (currentLevel <= 5) {
                 qTextDisplay.textContent = generateEasyMath(isTrue);
