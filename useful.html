@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Looper</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+        }
+        iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        input {
+            padding: 8px;
+            width: 250px;
+            border-radius: 4px;
+            border: none;
+        }
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>YouTube Continuous Loop</h2>
+        <div id="player-container">
+            <iframe id="videoFrame" 
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&loop=1&playlist=dQw4w9WgXcQ" 
+                allow="autoplay; encrypted-media" 
+                allowfullscreen>
+            </iframe>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="videoIdInput" placeholder="Enter YouTube Video ID (e.g. dQw4w9WgXcQ)">
+            <button onclick="updateVideo()">Load & Loop</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">
+            Note: Most browsers require you to interact with the page (click something) before autoplay works.
+        </p>
+    </div>
+
+    <script>
+        function updateVideo() {
+            const input = document.getElementById('videoIdInput').value.trim();
+            let videoId = input;
+
+            // Simple logic to extract ID if user pastes a full URL
+            if (input.includes('v=')) {
+                videoId = input.split('v=')[1].split('&')[0];
+            } else if (input.includes('youtu.be/')) {
+                videoId = input.split('youtu.be/')[1].split('?')[0];
+            }
+
+            if (videoId) {
+                const newSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`;
+                document.getElementById('videoFrame').src = newSrc;
+            } else {
+                alert("Please enter a valid Video ID or URL");
+            }
+        }
+    </script>
+</body>
+</html>
